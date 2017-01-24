@@ -2,7 +2,6 @@ package edu.cornell.scholars.keywordcloudgenerator;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
@@ -16,6 +15,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Logger;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -39,6 +39,8 @@ import edu.cornell.scholars.keywordminer.Mesh;
 
 public class UniversityLevelKeywordCloudGenerator {
 
+	private static final Logger LOGGER = Logger.getLogger(UniversityLevelKeywordCloudGenerator.class.getName());
+
 	private final static String ARTICLE_2_PERSON_MAP = Configuration.QUERY_RESULTSET_FOLDER +"/"+ Configuration.date 
 			+ "/" + Configuration.ARTICLE_2_PERSON_MAP_FILENAME;
 
@@ -53,11 +55,11 @@ public class UniversityLevelKeywordCloudGenerator {
 			Configuration.ARTICLE_2_MESHTERM_MAP_FILENAME;
 	private final static String ARTICLE_2_INFERRED_KEYWORDS_MAP = Configuration.QUERY_RESULTSET_FOLDER +"/"+ Configuration.date 
 			+ "/" + Configuration.ARTICLE_2_INFERREDKEYWORD_FILENAME;
-	
+
 	private final static String UNIVERISTY_KEYWORD_CLOUD = Configuration.POSTPROCESS_RESULTSET_FOLDER +"/"+ Configuration.date +"/"+
 			Configuration.HOMEPAGE_KEYWORD_CLOUD_FOLDER + "/" + Configuration.HOMEPAGE_KEYWORD_CLOUD;
 
-	
+
 	private Set<String> allkeywords = null;
 	private Set<Mesh> allMesh = null;
 	private Set<String> allMeshWords = null;
@@ -69,10 +71,18 @@ public class UniversityLevelKeywordCloudGenerator {
 
 	public static void main(String[] args) {
 		UniversityLevelKeywordCloudGenerator obj = new UniversityLevelKeywordCloudGenerator();
-		obj.runProcess();	
+		try {
+			obj.runProcess();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (ParserConfigurationException e) {
+			e.printStackTrace();
+		} catch (SAXException e) {
+			e.printStackTrace();
+		}	
 	}
 
-	public void runProcess() {
+	public void runProcess() throws IOException, ParserConfigurationException, SAXException {
 
 		NFPersonArticles = new HashSet<String>();
 
@@ -87,17 +97,18 @@ public class UniversityLevelKeywordCloudGenerator {
 		Map<String, Keyword> keywordMap = getKeywordToPersonMap(allkeywords, articleKWMap, article2person);
 		//iterate over mesh terms and find articles and then persons for those articles.
 		Map<String, Keyword> meshMap = getMeshTermToPersonMap(allMesh, articleMeshMap, article2person);
-		
+
 		Map<String, Keyword> groupedMap = new HashMap<String, Keyword>();
 		groupedMap.putAll(keywordMap);
 		groupedMap.putAll(meshMap);
-		
+
 		System.out.println(NFPersonArticles.size()); // not used right now.
 
 		computeWordCloudData(groupedMap);
+		
 		//printKeywordMap(groupedMap);
-		
-		
+
+
 	}
 
 	private void printKeywordMap(Map<String, Keyword> keywordMap) {
@@ -108,14 +119,14 @@ public class UniversityLevelKeywordCloudGenerator {
 		}
 	}
 
-		private void computeWordCloudData(Map<String, Keyword> kwMap) {
-			List<Keyword> kwListByPersonCount = new ArrayList<Keyword>(kwMap.values());
-			Collections.sort(kwListByPersonCount, new Keyword.SortByPersonCount());
-			List<Keyword> subKWListByPersonCount = kwListByPersonCount.subList(0, 300);
-			mapDataToJSON(subKWListByPersonCount, UNIVERISTY_KEYWORD_CLOUD);
-		}
-		
-	
+	private void computeWordCloudData(Map<String, Keyword> kwMap) throws JsonGenerationException, JsonMappingException, IOException {
+		List<Keyword> kwListByPersonCount = new ArrayList<Keyword>(kwMap.values());
+		Collections.sort(kwListByPersonCount, new Keyword.SortByPersonCount());
+		List<Keyword> subKWListByPersonCount = kwListByPersonCount.subList(0, 300);
+		mapDataToJSON(subKWListByPersonCount, UNIVERISTY_KEYWORD_CLOUD);
+	}
+
+
 	private Map<String, Keyword> getMeshTermToPersonMap(Set<Mesh> allMesh2, Map<String, Set<String>> articleMeshMap2,
 			Map<String, Set<Person>> article2person2) {
 
@@ -170,13 +181,11 @@ public class UniversityLevelKeywordCloudGenerator {
 
 	private Set<Person> getPersonsListForAKeywordMesh(Set<String> listOfArticles, Map<String, Set<Person>> article2person2) {
 		Set<Person> persons = new HashSet<Person>();
-		Set<String> keys = article2person2.keySet();
 		for(String article: listOfArticles){
 			Set<Person> personSet = article2person2.get(article);
 			try{
 				addNewPersonsWithArticleCount(persons, personSet);		
 			}catch(NullPointerException exp){
-				//System.out.println(article);
 				NFPersonArticles.add(article);
 			}
 		}
@@ -233,96 +242,73 @@ public class UniversityLevelKeywordCloudGenerator {
 		return articles;
 	}
 
-	private Map<String, Set<Person>> readArticle2PersonMapFile(String filePath) {
+	private Map<String, Set<Person>> readArticle2PersonMapFile(String filePath) throws IOException {
 		Reader in;
 		Map<String, Set<Person>> map = new HashMap<String, Set<Person>>();
-		try {
-			in = new FileReader(filePath);
-			Iterable<CSVRecord> records = null;
-			records = CSVFormat.EXCEL.withDelimiter(',').withQuote('"').parse(in);
-			for (CSVRecord record : records) {
-				String articleURI = record.get(0);
-				Person person = new Person();
-				String personURI = record.get(1);
-				String personName = getPersonName(record.get(2), record.get(3), record.get(4));
-				person.setPersonURI(personURI);
-				person.setPersonName(personName);
-				if(map.get(articleURI)!= null){
-					Set<Person> p = map.get(articleURI);
-					p.add(person);
-					map.put(articleURI, p);
-				}else{
-					Set<Person> p = new HashSet<Person>();
-					p.add(person);
-					map.put(articleURI, p);
-				}
-
+		in = new FileReader(filePath);
+		Iterable<CSVRecord> records = null;
+		records = CSVFormat.EXCEL.withDelimiter(',').withQuote('"').parse(in);
+		for (CSVRecord record : records) {
+			String articleURI = record.get(0);
+			Person person = new Person();
+			String personURI = record.get(1);
+			String personName = getPersonName(record.get(2), record.get(3), record.get(4));
+			person.setPersonURI(personURI);
+			person.setPersonName(personName);
+			if(map.get(articleURI)!= null){
+				Set<Person> p = map.get(articleURI);
+				p.add(person);
+				map.put(articleURI, p);
+			}else{
+				Set<Person> p = new HashSet<Person>();
+				p.add(person);
+				map.put(articleURI, p);
 			}
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		}catch (IOException e) {
-			e.printStackTrace();
 		}
 		return map;
 	}
 
 
-	private Map<String, Set<String>> getArticleKeywordMeSHMap(File file) {
+	private Map<String, Set<String>> getArticleKeywordMeSHMap(File file) throws IOException {
 		Map<String, Set<String>> map = new HashMap<String, Set<String>>();
 		BufferedReader br = null;
 		String line = "";
 		long lineCount = 0;
-		try {
-			br = new BufferedReader(new FileReader(file));
-			while ((line = br.readLine()) != null) {
-				lineCount++;
-				if(line.trim().length() == 0) continue;
-				@SuppressWarnings("resource")
-				CSVReader reader = new CSVReader(new StringReader(line),'|');	
-				String[] tokens;
-				while ((tokens = reader.readNext()) != null) {
-					try {
-						Set<String> kwords = new HashSet<String>();
-						String kw[] = tokens[1].split(";;");
-						for(String k : kw){
-							kwords.add(k.trim().toUpperCase());
-						}
-						map.put(tokens[0], kwords);
-					}catch (ArrayIndexOutOfBoundsException exp) {
-						for (String s : tokens) {
-							System.out.println("ArrayIndexOutOfBoundsException: "+ lineCount+" :"+ s);
-						}
-						System.out.println();
-						continue;
-					}
-				}
-			}
-		}catch (FileNotFoundException e) {
-			System.err.println(line);
-			e.printStackTrace();
-		} catch (IOException e) {
-			System.err.println(line);
-			e.printStackTrace();
-		} finally {
-			if (br != null) {
+		br = new BufferedReader(new FileReader(file));
+		while ((line = br.readLine()) != null) {
+			lineCount++;
+			if(line.trim().length() == 0) continue;
+			@SuppressWarnings("resource")
+			CSVReader reader = new CSVReader(new StringReader(line),'|');	
+			String[] tokens;
+			while ((tokens = reader.readNext()) != null) {
 				try {
-					br.close();
-				} catch (IOException e) {
-					e.printStackTrace();
+					Set<String> kwords = new HashSet<String>();
+					String kw[] = tokens[1].split(";;");
+					for(String k : kw){
+						kwords.add(k.trim().toUpperCase());
+					}
+					map.put(tokens[0], kwords);
+				}catch (ArrayIndexOutOfBoundsException exp) {
+					for (String s : tokens) {
+						LOGGER.warning("ArrayIndexOutOfBoundsException: "+ lineCount+" :"+ s);
+					}
+					LOGGER.warning("\n");
+					continue;
 				}
 			}
 		}
-		System.out.println("article to keywords-mesh line count:"+lineCount);
+		br.close();
+		LOGGER.info("article to keywords-mesh line count:"+lineCount);
 		return map;
 	}
 
 
-	private Set<Mesh> getMeshLines (File xmlFile){
+	private Set<Mesh> getMeshLines (File xmlFile) throws ParserConfigurationException, SAXException, IOException{
 		allMeshWords = new HashSet<String>();
 		Set<Mesh> rows = new HashSet<Mesh>();
 		DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
 		DocumentBuilder dBuilder;
-		try {
 			dBuilder = dbFactory.newDocumentBuilder();
 			Document doc = dBuilder.parse(xmlFile);
 			NodeList entryList = doc.getElementsByTagName("result");
@@ -348,29 +334,21 @@ public class UniversityLevelKeywordCloudGenerator {
 				allMeshWords.add(obj.getMeshLabel());
 				rows.add(obj);
 			}// end of reading entries.
-		} catch (SAXException | IOException | ParserConfigurationException e) {
-			e.printStackTrace();
-		} 
-		System.out.println("Total number of mesh terms:"+ rows.size());
+		LOGGER.info("Total number of mesh terms:"+ rows.size());
 		return rows;
 	}
 
-	private Set<String> getLines (File file){
+	private Set<String> getLines (File file) throws IOException{
 		Set<String> rows = new HashSet<String>();
 		CSVReader reader;
-		try {
-			reader = new CSVReader(new FileReader(file),',','\"');
-			String [] nextLine;	
-			reader.readNext();  // header
-			while ((nextLine = reader.readNext()) != null) {
-				rows.add(nextLine[0]);
-			}
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
+		reader = new CSVReader(new FileReader(file),',','\"');
+		String [] nextLine;	
+		reader.readNext();  // header
+		while ((nextLine = reader.readNext()) != null) {
+			rows.add(nextLine[0]);
 		}
-		System.out.println("Total number of freetext keywords:"+ rows.size());
+		reader.close();
+		LOGGER.info("Total number of freetext keywords:"+ rows.size());
 		return rows;
 	}
 	private String getPersonName(String firstName, String middleName, String familyName) {
@@ -379,19 +357,11 @@ public class UniversityLevelKeywordCloudGenerator {
 				+familyName;
 	}
 
-	private void mapDataToJSON(Collection<Keyword> collection, String filePath){
+	private void mapDataToJSON(Collection<Keyword> collection, String filePath) throws JsonGenerationException, JsonMappingException, IOException{
 		ObjectMapper mapper = new ObjectMapper();
 		String jsonInString = null;
-		try {
 			mapper.writeValue(new File(filePath), collection);
 			jsonInString = mapper.writeValueAsString(collection);
 			//System.out.println(jsonInString);
-		} catch (JsonGenerationException e) {
-			e.printStackTrace();
-		} catch (JsonMappingException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
 	}
 }

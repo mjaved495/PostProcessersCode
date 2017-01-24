@@ -14,6 +14,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Logger;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -34,7 +35,9 @@ import com.opencsv.CSVReader;
 import edu.cornell.scholars.config.Configuration;
 
 public class KeywordMinerEntryPoint {
-	
+
+	private static final Logger LOGGER = Logger.getLogger(KeywordMinerEntryPoint.class.getName());
+
 	//input file names
 	private final static String ARTICLE_FILENAME = Configuration.QUERY_RESULTSET_FOLDER +"/"+ Configuration.date +"/"+
 			Configuration.ARTICLE_2_TITLE_ABSTRACT_MAP_FILENAME;
@@ -66,11 +69,19 @@ public class KeywordMinerEntryPoint {
 	
 	public static void main(String[] args) {
 		KeywordMinerEntryPoint obj = new KeywordMinerEntryPoint();
-		obj.runProcess();
+		try {
+			obj.runProcess();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (ParserConfigurationException e) {
+			e.printStackTrace();
+		} catch (SAXException e) {
+			e.printStackTrace();
+		}
 	}
 
-	public void runProcess() {
-		
+	public void runProcess() throws IOException, ParserConfigurationException, SAXException {
+
 		article_rows = readArticleMapFile(new File(ARTICLE_FILENAME));
 		allkeywords = getLines(new File(ALL_KW_FILENAME));
 		allMesh = getMeshLines(new File(ALL_MESHTERM_FILENAME));
@@ -78,7 +89,7 @@ public class KeywordMinerEntryPoint {
 		articleMeshMap = getArticleKeywordMeSHMap(new File(ARTICLE_2_MESH_FILENAME));
 
 		Map<String, ArticleEntriesData> articleDataMap =  createArticleMapOfEntries(article_rows);
-		System.out.println(articleDataMap.size()+" rows of article data map.");
+		LOGGER.info(articleDataMap.size()+" rows of article data map.");
 
 		compareAndProcess(articleDataMap);
 		saveArticleMapDataInAFile(articleDataMap, ARTICLE_MAP_CSVDATA_FILEPATH);
@@ -86,7 +97,7 @@ public class KeywordMinerEntryPoint {
 
 	}
 
-	private void saveDataInARDF(Map<String, ArticleEntriesData> articleDataMap, String filePath) {
+	private void saveDataInARDF(Map<String, ArticleEntriesData> articleDataMap, String filePath) throws FileNotFoundException {
 		String VIVOC_NS = "http://scholars.cornell.edu/ontology/vivoc.owl#";
 		Model rdfmodel = ModelFactory.createDefaultModel();	
 		Property inferredKeyword = rdfmodel.createProperty(VIVOC_NS+"inferredKeywords");
@@ -121,19 +132,15 @@ public class KeywordMinerEntryPoint {
 		}
 
 		PrintWriter printer = null;
-		try {
-			printer = new PrintWriter(filePath);
-			rdfmodel.write(printer, "N-Triples");
-			printer.flush();
-			printer.close();
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		}
+		printer = new PrintWriter(filePath);
+		rdfmodel.write(printer, "N-Triples");
+		printer.flush();
+		printer.close();
 	}
 
 	private void compareAndProcess(Map<String, ArticleEntriesData> articleDataMap) {	
 		Set<String> article_key = articleDataMap.keySet();
-		System.out.println("processing "+ article_key.size() +" article rows");
+		LOGGER.info("processing "+ article_key.size() +" article rows");
 		for(Iterator<String> i = article_key.iterator(); i.hasNext();){
 			String articleURI = i.next();
 			ArticleEntriesData articleEntry = articleDataMap.get(articleURI);
@@ -148,8 +155,8 @@ public class KeywordMinerEntryPoint {
 			}
 			articleEntry.setMinedKeywordCount(articleLevelMinedWordCount);
 		}
-		System.out.println(count+" one word entry matches");
-		System.out.println(articlecount+" article matches");
+		LOGGER.info(count+" one word entry matches");
+		LOGGER.info(articlecount+" article matches");
 
 	}
 
@@ -211,19 +218,15 @@ public class KeywordMinerEntryPoint {
 	}
 
 	private static void saveArticleMapDataInAFile(Map<String, ArticleEntriesData> articleDataMap,
-			String articleMapDataFilepath) {
+			String articleMapDataFilepath) throws FileNotFoundException {
 		PrintWriter printWriter;
-		try {
-			printWriter = new PrintWriter (articleMapDataFilepath);	
-			Set<String> keySet = articleDataMap.keySet();
-			for(String key: keySet){
-				ArticleEntriesData obj = articleDataMap.get(key);
-				printWriter.println(obj.toString());
-			}
-			printWriter.close();
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		}	
+		printWriter = new PrintWriter (articleMapDataFilepath);	
+		Set<String> keySet = articleDataMap.keySet();
+		for(String key: keySet){
+			ArticleEntriesData obj = articleDataMap.get(key);
+			printWriter.println(obj.toString());
+		}
+		printWriter.close();
 	}
 
 	private static Map<String, ArticleEntriesData> createArticleMapOfEntries(List<ArticleEntries> article_rows) {
@@ -265,157 +268,118 @@ public class KeywordMinerEntryPoint {
 		return result;
 	}
 
-	private List<ArticleEntries> readArticleMapFile(File file) {
+	private List<ArticleEntries> readArticleMapFile(File file) throws IOException {
 		List<ArticleEntries> rows = new ArrayList<ArticleEntries>();
 		BufferedReader br = null;
 		String line = "";
 		long lineCount = 0;
-		try {
-			br = new BufferedReader(new FileReader(file));
-			while ((line = br.readLine()) != null) {
-				lineCount++;
-				if(line.trim().length() == 0) continue;
-				@SuppressWarnings("resource")
-				CSVReader reader = new CSVReader(new StringReader(line),'|');	
-				ArticleEntries obj = new ArticleEntries();
-				String[] tokens;
-				while ((tokens = reader.readNext()) != null) {
-					try {
-						obj.setArticleURI(tokens[0]);
-						obj.setArticleTitle(tokens[1]);
-						if(tokens[2] != null){
-							obj.setArticleAbstract(tokens[2]);
-						}
-					}catch (ArrayIndexOutOfBoundsException exp) {
-						for (String s : tokens) {
-							System.out.println("ArrayIndexOutOfBoundsException: "+ lineCount+" :"+ s);
-						}
-						System.out.println();
-						continue;
-					}
-				}
-				rows.add(obj);
-			}
-			System.out.println("article to title-abstract line count:"+lineCount);
-		}catch (FileNotFoundException e) {
-			System.err.println(line);
-			e.printStackTrace();
-		} catch (IOException e) {
-			System.err.println(line);
-			e.printStackTrace();
-		} finally {
-			if (br != null) {
+		br = new BufferedReader(new FileReader(file));
+		while ((line = br.readLine()) != null) {
+			lineCount++;
+			if(line.trim().length() == 0) continue;
+			@SuppressWarnings("resource")
+			CSVReader reader = new CSVReader(new StringReader(line),'|');	
+			ArticleEntries obj = new ArticleEntries();
+			String[] tokens;
+			while ((tokens = reader.readNext()) != null) {
 				try {
-					br.close();
-				} catch (IOException e) {
-					e.printStackTrace();
+					obj.setArticleURI(tokens[0]);
+					obj.setArticleTitle(tokens[1]);
+					if(tokens[2] != null){
+						obj.setArticleAbstract(tokens[2]);
+					}
+				}catch (ArrayIndexOutOfBoundsException exp) {
+					for (String s : tokens) {
+						LOGGER.warning("ArrayIndexOutOfBoundsException: "+ lineCount+" :"+ s);
+					}
+					LOGGER.warning("\n");
+					continue;
 				}
 			}
+			rows.add(obj);
 		}
+		LOGGER.info("article to title-abstract line count:"+lineCount);
+		br.close();
 		return rows;
 	}
 
-	private Map<String, Set<String>> getArticleKeywordMeSHMap(File file) {
+	private Map<String, Set<String>> getArticleKeywordMeSHMap(File file) throws IOException {
 		Map<String, Set<String>> map = new HashMap<String, Set<String>>();
 		BufferedReader br = null;
 		String line = "";
 		long lineCount = 0;
-		try {
-			br = new BufferedReader(new FileReader(file));
-			while ((line = br.readLine()) != null) {
-				lineCount++;
-				if(line.trim().length() == 0) continue;
-				@SuppressWarnings("resource")
-				CSVReader reader = new CSVReader(new StringReader(line),'|');	
-				String[] tokens;
-				while ((tokens = reader.readNext()) != null) {
-					try {
-						Set<String> kwords = new HashSet<String>();
-						String kw[] = tokens[1].split(";;");
-						for(String k : kw){
-							kwords.add(k.trim().toUpperCase());
-						}
-						map.put(tokens[0], kwords);
-					}catch (ArrayIndexOutOfBoundsException exp) {
-						for (String s : tokens) {
-							System.out.println("ArrayIndexOutOfBoundsException: "+ lineCount+" :"+ s);
-						}
-						System.out.println();
-						continue;
-					}
-				}
-			}
-		}catch (FileNotFoundException e) {
-			System.err.println(line);
-			e.printStackTrace();
-		} catch (IOException e) {
-			System.err.println(line);
-			e.printStackTrace();
-		} finally {
-			if (br != null) {
+		br = new BufferedReader(new FileReader(file));
+		while ((line = br.readLine()) != null) {
+			lineCount++;
+			if(line.trim().length() == 0) continue;
+			@SuppressWarnings("resource")
+			CSVReader reader = new CSVReader(new StringReader(line),'|');	
+			String[] tokens;
+			while ((tokens = reader.readNext()) != null) {
 				try {
-					br.close();
-				} catch (IOException e) {
-					e.printStackTrace();
+					Set<String> kwords = new HashSet<String>();
+					String kw[] = tokens[1].split(";;");
+					for(String k : kw){
+						kwords.add(k.trim().toUpperCase());
+					}
+					map.put(tokens[0], kwords);
+				}catch (ArrayIndexOutOfBoundsException exp) {
+					for (String s : tokens) {
+						LOGGER.warning("ArrayIndexOutOfBoundsException: "+ lineCount+" :"+ s);
+					}
+					LOGGER.warning("\n");
+					continue;
 				}
 			}
 		}
-		System.out.println("article to keywords-mesh line count:"+lineCount);
+		br.close();
+		LOGGER.info("article to keywords-mesh line count:"+lineCount);
 		return map;
 	}
 
-	public Set<Mesh> getMeshLines (File xmlFile){
+	public Set<Mesh> getMeshLines (File xmlFile) throws ParserConfigurationException, SAXException, IOException{
 		Set<Mesh> rows = new HashSet<Mesh>();
 		DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
 		DocumentBuilder dBuilder;
-		try {
-			dBuilder = dbFactory.newDocumentBuilder();
-			Document doc = dBuilder.parse(xmlFile);
-			NodeList entryList = doc.getElementsByTagName("result");
-			for(int index=0; index< entryList.getLength(); index++){
-				Mesh obj = new Mesh();
-				Node node = entryList.item(index);
-				//System.out.println(node.getNodeName());
-				Element eElement = (Element) node;
-				NodeList bindingNodes = eElement.getElementsByTagName("binding");
-				for(int i=0; i< bindingNodes.getLength(); i++){
-					Node n = bindingNodes.item(i);
-					Element bindElement = (Element) n;
-					String att = bindElement.getAttribute("name");
-					switch(att){
-					case "mesh": 
-						obj.setMeshURI(bindElement.getElementsByTagName("uri").item(0).getTextContent());
-						break;
-					case "meshLabel": 
-						obj.setMeshLabel(bindElement.getElementsByTagName("literal").item(0).getTextContent());
-						break;
-					}
+		dBuilder = dbFactory.newDocumentBuilder();
+		Document doc = dBuilder.parse(xmlFile);
+		NodeList entryList = doc.getElementsByTagName("result");
+		for(int index=0; index< entryList.getLength(); index++){
+			Mesh obj = new Mesh();
+			Node node = entryList.item(index);
+			//System.out.println(node.getNodeName());
+			Element eElement = (Element) node;
+			NodeList bindingNodes = eElement.getElementsByTagName("binding");
+			for(int i=0; i< bindingNodes.getLength(); i++){
+				Node n = bindingNodes.item(i);
+				Element bindElement = (Element) n;
+				String att = bindElement.getAttribute("name");
+				switch(att){
+				case "mesh": 
+					obj.setMeshURI(bindElement.getElementsByTagName("uri").item(0).getTextContent());
+					break;
+				case "meshLabel": 
+					obj.setMeshLabel(bindElement.getElementsByTagName("literal").item(0).getTextContent());
+					break;
 				}
-				rows.add(obj);
-			}// end of reading entries.
-		} catch (SAXException | IOException | ParserConfigurationException e) {
-			e.printStackTrace();
-		} 
-		System.out.println("Total number of mesh terms:"+ rows.size());
+			}
+			rows.add(obj);
+		}// end of reading entries.
+		LOGGER.info("Total number of mesh terms:"+ rows.size());
 		return rows;
 	}
 
-	public Set<String> getLines (File file){
+	public Set<String> getLines (File file) throws IOException{
 		Set<String> rows = new HashSet<String>();
 		CSVReader reader;
-		try {
-			reader = new CSVReader(new FileReader(file),',','\"');
-			String [] nextLine;	
-			reader.readNext();  // header
-			while ((nextLine = reader.readNext()) != null) {
-				rows.add(nextLine[0]);
-			}
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
+		reader = new CSVReader(new FileReader(file),',','\"');
+		String [] nextLine;	
+		reader.readNext();  // header
+		while ((nextLine = reader.readNext()) != null) {
+			rows.add(nextLine[0]);
 		}
-		System.out.println("Total number of freetext keywords:"+ rows.size());
+		reader.close();
+		LOGGER.info("Total number of freetext keywords:"+ rows.size());
 		return rows;
 	}
 }

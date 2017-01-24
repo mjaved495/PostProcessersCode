@@ -7,6 +7,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.Reader;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -14,6 +15,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVRecord;
 
 import com.opencsv.CSVReader;
 
@@ -31,7 +35,9 @@ public class InputFilesReader {
 			Configuration.PERSON_2_DEPT_UNIT_MAP_FILENAME;
 	public static String DEPARTMENT_MAPPER_FILENAME = Configuration.QUERY_RESULTSET_FOLDER + "/" + Configuration.date + "/"+
 			Configuration.OSP_ADMNDEPT_FILENAME;
-
+	public static String ALL_GRANTS_FILE = Configuration.QUERY_RESULTSET_FOLDER + "/" + Configuration.date + "/"+
+			Configuration.ALL_GRANTS_FILENAME;
+	
 	//output file names
 	public static String OUTPUT_TXT_FILE = Configuration.OSP_GRANT_TXT;
 
@@ -39,7 +45,8 @@ public class InputFilesReader {
 	public Map<String, Investigator> inv_entries = null;
 	private Map<String, Department> departmentMap = null;
 	private Set<Department> newDept = new HashSet<Department>();
-
+	private Map<String, Grant> existingGrants = null;
+	
 	public static void main(String[] args) {
 		InputFilesReader reader = new InputFilesReader();
 		reader.runProcess();
@@ -47,9 +54,14 @@ public class InputFilesReader {
 
 	public void runProcess(){
 
+		
+		existingGrants = readAllGrantsFile(ALL_GRANTS_FILE);
+		 
 		AwardsDataReader obj1 = new AwardsDataReader();
 		awd_entries = obj1.loadAwardData(new File(INPUT_AWRAD_FILENAME));
 
+		awd_entries = getNewAwardsOnly(awd_entries, existingGrants);
+			
 		//saveDistinctSponsors(awd_entries, "resources/output/AwdDistinctSponsorNames.csv");		
 		//saveSponsorsFlow(awd_entries, "resources/output/AwdSponsors.csv");
 
@@ -63,6 +75,22 @@ public class InputFilesReader {
 
 		//update mapping file.
 		updateDepartmentMapperFile(new File(DEPARTMENT_MAPPER_FILENAME));
+		
+	}
+
+	private Map<String, Award> getNewAwardsOnly(Map<String, Award> awd_entries2, Map<String, Grant> existingGrants2) {
+		Map<String, Award> newAwards = new HashMap<String, Award>();
+		Set<String> existingIds = existingGrants2.keySet();
+		
+		Set<String> latestIds = awd_entries2.keySet();
+		for(String id: latestIds){
+			if(!existingIds.contains(id)){
+				newAwards.put(id, awd_entries2.get(id));
+				System.out.println(awd_entries2.get(id).getAWARD_PROP_FULL_TITLE());
+			}
+		}
+		System.out.println("New award entries:"+ newAwards.size());
+		return newAwards;
 	}
 
 	private void updateDepartmentMapperFile(File deptFile) {
@@ -133,6 +161,7 @@ public class InputFilesReader {
 			for(String inv: investigators){
 				String prjId = inv.substring(0, inv.indexOf("-"));
 				Award award = awd_entries2.get(prjId);
+				if(award == null) continue;
 				Investigator investigator = inv_entries2.get(inv);
 				Person_NetIdDeptMap entity = findMappedPerson(list, investigator.getINVPROJ_INVESTIGATOR_NETID()); 
 				if(entity == null) continue ;  // no investigator found
@@ -240,4 +269,26 @@ public class InputFilesReader {
 		return list;
 	}
 	
+	private Map<String, Grant> readAllGrantsFile(String filePath) {
+		Map<String, Grant> grants = new HashMap<String, Grant>();
+		Reader in;
+		try {
+			in = new FileReader(filePath);
+			Iterable<CSVRecord> records = null;
+			records = CSVFormat.EXCEL.withDelimiter(',').withQuote('"').parse(in);
+			for (CSVRecord record : records) {
+				String id = record.get(0);
+				String uri = record.get(1);
+				String typeURI = record.get(2);
+				Grant g = new Grant(id, uri, typeURI);
+				grants.put(id, g);
+			}
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}catch (IOException e) {
+			e.printStackTrace();
+		}
+		return grants;
+	}
+
 }

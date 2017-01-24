@@ -180,6 +180,7 @@ public class JournalToSubjectAreaMapEntryPoint {
 						continue;
 					}
 				}
+				reader.close();
 			}
 		}catch (FileNotFoundException e) {
 			System.err.println(line);

@@ -109,7 +109,9 @@ public class AwardsDataReader {
 		} catch (SAXException | IOException | ParserConfigurationException e) {
 			e.printStackTrace();
 		} 
-		System.out.println("total award entries:"+ count);
+		
+		System.out.println("Total award entries:"+ count);
+		
 		return entries;
 	}
 

@@ -12,7 +12,7 @@ public class Configuration {
 	public static String WOS_DATA_FOLDER = QUERY_RESULTSET_FOLDER + "/"+ date + "/"+ "wosdata";
 	
 	public static String ALL_KEYWORDS_FILENAME = "AllFreeTextKeywords.psv";
-	public static String ALL_MESHTERMS_FILENAME = "AllMeshTerms.psv";
+	public static String ALL_MESHTERMS_FILENAME = "AllMeshTerms.xml";
 	public static String ALL_ORGANIZATION_MAP_FILENAME = "AllOrganizationsMap.psv";
 	public static String ALL_SUBJECTAREAS_FILENAME = "AllSubjectAreas.psv";
 	public static String ARTICLE_2_KEYWORDSET_MAP_FILENAME = "Article2KeywordSetMap.psv";
@@ -40,6 +40,7 @@ public class Configuration {
 	public static String INF_KEYWORDS_NT =  POSTPROCESS_RESULTSET_FOLDER +"/"+ date 
 			+"/"+ INFERRED_KEYWORDS_FOLDER +"/"+ "ArticleMapWithMinedKeywordsAndMeSH.nt";
 	
+	public static String ALL_GRANTS_FILENAME = "AllGrants.csv";
 	public static String OSP_AWARDS_FILENAME = "Awards.xml";
 	public static String OSP_INV_FILENAME = "Investigators.xml";
 	public static String OSP_ADMNDEPT_FILENAME ="AdministringDepartmentMapper.csv";
