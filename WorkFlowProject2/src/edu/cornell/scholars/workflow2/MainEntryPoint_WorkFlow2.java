@@ -20,11 +20,11 @@ public class MainEntryPoint_WorkFlow2 {
 
 		//Step 2: Read the WOS queried data and save it in (WOS_DATA_FILE) csv file.
 		WosQueryResultsSetDataParser parser = new WosQueryResultsSetDataParser();
-		//parser.runProcess();
+		parser.runProcess();
 
 		//Step 3: Read the WOS_DATA_FILE file and save Affiliation-GRID map
 		WOSDataFileReaderGRIDMapper obj = new WOSDataFileReaderGRIDMapper();
-		//obj.runProcess();
+		obj.runProcess();
 		
 		//Step 4: Read the WOS_DATA_FILE file and process and save the Collaboration Wheel and Global Collaboration Process
 		System.out.println("\n\n---------- STARTING COLLABORATIN WHEEL AND GLOBAL COLLABORATION PROCESS----------");

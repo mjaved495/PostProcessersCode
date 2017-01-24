@@ -21,6 +21,7 @@ public class Configuration {
 	public static String JOURNAL_2_ISSN_EISSN_SUBJECTAREA_MAP_FILENAME = "Journal2IssnEissnSubjectAreaMap.psv";
 	public static String PERSON_2_DEPT_UNIT_MAP_FILENAME = "Person2DepartmentUnitMap.psv";
 	
+	public static String ALL_GRANTS_FILENAME = "AllGrants.csv";
 	public static String OSP_AWARDS_FILENAME = "Awards.xml";
 	public static String OSP_INV_FILENAME = "Investigators.xml";
 	public static String OSP_ADMNDEPT_FILENAME ="AdministringDepartmentMapper.csv";
