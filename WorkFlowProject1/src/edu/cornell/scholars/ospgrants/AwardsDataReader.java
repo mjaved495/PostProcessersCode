@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Logger;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -21,6 +22,7 @@ import org.xml.sax.SAXException;
 
 public class AwardsDataReader {
 
+	private static final Logger LOGGER = Logger.getLogger(AwardsDataReader.class.getName());
 	private Document doc;
 	private int count = 0;
 	
@@ -31,11 +33,10 @@ public class AwardsDataReader {
 		//obj.display("AWARD_STATUS");
 	}
 
-	public Map<String, Award> loadAwardData(File xmlFile){
+	public Map<String, Award> loadAwardData(File xmlFile) throws ParserConfigurationException, SAXException, IOException{
 		Map<String, Award> entries = new HashMap<String, Award>();
 		DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
 		DocumentBuilder dBuilder;
-		try {
 			dBuilder = dbFactory.newDocumentBuilder();
 			doc = dBuilder.parse(xmlFile);
 			NodeList entryList = doc.getElementsByTagName("Award");	
@@ -106,11 +107,8 @@ public class AwardsDataReader {
 				entries.put(projectId, entry);
 				count++;
 			}// end of reading entries.
-		} catch (SAXException | IOException | ParserConfigurationException e) {
-			e.printStackTrace();
-		} 
 		
-		System.out.println("Total award entries:"+ count);
+			LOGGER.info("GRANTS: Total award entries:"+ count);
 		
 		return entries;
 	}

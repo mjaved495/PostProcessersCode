@@ -13,7 +13,6 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.xml.sax.SAXException;
 
-import edu.cornell.scholars.collaboration.harvester.CollabHarvesterMainEntryPoint;
 import edu.cornell.scholars.config.Configuration;
 import edu.cornell.scholars.journalsubjectareamapper.JournalToSubjectAreaMapEntryPoint;
 import edu.cornell.scholars.keywordcloudgenerator.UniversityLevelKeywordCloudGenerator;
@@ -79,19 +78,6 @@ public class MainEntryPoint_WorkFlow1 {
 		}catch(Exception exp){
 			LOGGER.log(Level.WARNING, "\n\n---------ERROR OCCURED:----------", exp);
 		}
-
-		//Run the WOS query builder process
-		LOGGER.info("\n\n---------- STARTING WOS QUERY BUILDER PROCESS----------");
-		try{
-			runWOSQueryBuilder();
-		}catch(Exception exp){
-			LOGGER.log(Level.WARNING, "\n\n---------ERROR OCCURED:----------", exp);
-		}
-
-		// SAVE THE FILES (DOWNLOADED FROM WOS) IN MAC-UTF-8 FORMAT.
-		// SAVE THE FILES (DOWNLOADED FROM WOS) IN MAC-UTF-8 FORMAT.
-		// SAVE THE FILES (DOWNLOADED FROM WOS) IN MAC-UTF-8 FORMAT.
-		// SAVE THE FILES (DOWNLOADED FROM WOS) IN MAC-UTF-8 FORMAT.
 
 		LOGGER.info("\n\n---------- ALL PROCESSES COMPLETED----------");
 	}
@@ -167,12 +153,6 @@ public class MainEntryPoint_WorkFlow1 {
 		jrnlep.runProcess();
 	}
 
-	
-	private void runWOSQueryBuilder() throws IOException {
-		CollabHarvesterMainEntryPoint harvester = new CollabHarvesterMainEntryPoint();
-		harvester.runProcess();
-	}
-	
 
 	private static String getCurrentDate() {
 		String date = null;
@@ -194,14 +174,10 @@ public class MainEntryPoint_WorkFlow1 {
 		Configuration.setSUPPL_FOLDER(map.get("SUPPL_FOLDER"));
 
 		// CREATE NEW DIRECTORIES
-		createFolder(new File(Configuration.POSTPROCESS_RESULTSET_FOLDER+"/"+date+"/collab/external"));
-		createFolder(new File(Configuration.POSTPROCESS_RESULTSET_FOLDER+"/"+date+"/collab/internal"));
 		createFolder(new File(Configuration.POSTPROCESS_RESULTSET_FOLDER+"/"+date+"/grant"));
 		createFolder(new File(Configuration.POSTPROCESS_RESULTSET_FOLDER+"/"+date+"/inferredkeywords"));
 		createFolder(new File(Configuration.POSTPROCESS_RESULTSET_FOLDER+"/"+date+"/kwclouds"));
 		createFolder(new File(Configuration.POSTPROCESS_RESULTSET_FOLDER+"/"+date+"/subjectarea"));
-
-		createFolder(new File(Configuration.QUERY_RESULTSET_FOLDER+"/"+date+"/wosdata"));
 
 	}
 

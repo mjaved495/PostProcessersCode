@@ -15,9 +15,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Logger;
+
+import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
+import org.xml.sax.SAXException;
 
 import com.opencsv.CSVReader;
 
@@ -25,6 +29,8 @@ import edu.cornell.scholars.config.Configuration;
 
 
 public class InputFilesReader {
+
+	private static final Logger LOGGER = Logger.getLogger( InputFilesReader.class.getName() );
 
 	//input file names
 	public static String INPUT_AWRAD_FILENAME = Configuration.QUERY_RESULTSET_FOLDER + "/" + Configuration.date + "/"+
@@ -37,31 +43,40 @@ public class InputFilesReader {
 			Configuration.OSP_ADMNDEPT_FILENAME;
 	public static String ALL_GRANTS_FILE = Configuration.QUERY_RESULTSET_FOLDER + "/" + Configuration.date + "/"+
 			Configuration.ALL_GRANTS_FILENAME;
-	
+
 	//output file names
-	public static String OUTPUT_TXT_FILE = Configuration.OSP_GRANT_TXT;
+	public static String OUTPUT_TXT_FILE = Configuration.POSTPROCESS_RESULTSET_FOLDER + "/" + Configuration.date +"/"+ 
+			Configuration.GRANTS_FOLDER +"/"+ Configuration.OSP_GRANT_TXT;
 
 	public Map<String, Award> awd_entries = null;
 	public Map<String, Investigator> inv_entries = null;
 	private Map<String, Department> departmentMap = null;
 	private Set<Department> newDept = new HashSet<Department>();
 	private Map<String, Grant> existingGrants = null;
-	
+
 	public static void main(String[] args) {
 		InputFilesReader reader = new InputFilesReader();
-		reader.runProcess();
+		try {
+			reader.runProcess();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (ParserConfigurationException e) {
+			e.printStackTrace();
+		} catch (SAXException e) {
+			e.printStackTrace();
+		}
 	}
 
-	public void runProcess(){
+	public void runProcess() throws IOException, ParserConfigurationException, SAXException{
 
-		
+
 		existingGrants = readAllGrantsFile(ALL_GRANTS_FILE);
-		 
+
 		AwardsDataReader obj1 = new AwardsDataReader();
 		awd_entries = obj1.loadAwardData(new File(INPUT_AWRAD_FILENAME));
 
 		awd_entries = getNewAwardsOnly(awd_entries, existingGrants);
-			
+
 		//saveDistinctSponsors(awd_entries, "resources/output/AwdDistinctSponsorNames.csv");		
 		//saveSponsorsFlow(awd_entries, "resources/output/AwdSponsors.csv");
 
@@ -75,166 +90,134 @@ public class InputFilesReader {
 
 		//update mapping file.
 		updateDepartmentMapperFile(new File(DEPARTMENT_MAPPER_FILENAME));
-		
+
 	}
 
 	private Map<String, Award> getNewAwardsOnly(Map<String, Award> awd_entries2, Map<String, Grant> existingGrants2) {
 		Map<String, Award> newAwards = new HashMap<String, Award>();
 		Set<String> existingIds = existingGrants2.keySet();
-		
+
 		Set<String> latestIds = awd_entries2.keySet();
 		for(String id: latestIds){
 			if(!existingIds.contains(id)){
 				newAwards.put(id, awd_entries2.get(id));
-				System.out.println(awd_entries2.get(id).getAWARD_PROP_FULL_TITLE());
+				//System.out.println(awd_entries2.get(id).getAWARD_PROP_FULL_TITLE());
 			}
 		}
-		System.out.println("New award entries:"+ newAwards.size());
+		LOGGER.info("GRANTS: New award entries:"+ newAwards.size());
 		return newAwards;
 	}
 
-	private void updateDepartmentMapperFile(File deptFile) {
+	private void updateDepartmentMapperFile(File deptFile) throws IOException {
 		int counter=0;
 		PrintWriter pw = null;
-		try {
-			FileWriter fw = new FileWriter(deptFile, true);
-			pw = new PrintWriter(fw);
-			for(Department dept: newDept){
-				System.err.println("Department Not Found: "+dept.getDeptId()+", "+ dept.getDeptName()+", "+dept.getRollupName());
-				if(departmentMap.get(dept.getDeptId()) == null){
-					pw.print("\n"+dept.toString());
-					counter++;
-				}
-			}   
-		} catch (IOException e) {
-			e.printStackTrace();
-		} finally {
-			if (pw != null) {
-				pw.close();
+		FileWriter fw = new FileWriter(deptFile, true);
+		pw = new PrintWriter(fw);
+		for(Department dept: newDept){
+			LOGGER.warning("Department Not Found: "+dept.getDeptId()+", "+ dept.getDeptName()+", "+dept.getRollupName());
+			if(departmentMap.get(dept.getDeptId()) == null){
+				pw.print("\n"+dept.toString());
+				counter++;
 			}
-		}
-		System.out.println(counter+" new rows added in "+ DEPARTMENT_MAPPER_FILENAME);
+		}   
+		pw.close();
+		LOGGER.info("GRANTS: "+counter+" new rows added in "+ DEPARTMENT_MAPPER_FILENAME);
 	}
 
-	public void saveSponsorsFlow(Map<String, Award> awd_entries, String filePath) {
+	private void saveSponsorsFlow(Map<String, Award> awd_entries, String filePath) throws FileNotFoundException {
 		PrintWriter printWriter;
-		try {
-			printWriter = new PrintWriter (filePath);	
-			for(Award awd: awd_entries.values()){
-				printWriter.println("\""+
-						awd.getAWARD_PROP_SPONSOR_ID()+"\",\""+
-						awd.getAWARD_PROP_SPONSOR_NAME()+"\",\""+
-						awd.getFLOW_THROUGH_SPONSOR_ID()+"\",\""+
-						awd.getFLOW_THROUGH_SPONSOR_NAME() + "\",\""+
-						awd.getSP_LEV_1()+ "\",\""+
-						awd.getSP_LEV_2()+"\",\""+
-						awd.getSP_LEV_3()+"\""
-						);
-			}
-		}catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} 
+		printWriter = new PrintWriter (filePath);	
+		for(Award awd: awd_entries.values()){
+			printWriter.println("\""+
+					awd.getAWARD_PROP_SPONSOR_ID()+"\",\""+
+					awd.getAWARD_PROP_SPONSOR_NAME()+"\",\""+
+					awd.getFLOW_THROUGH_SPONSOR_ID()+"\",\""+
+					awd.getFLOW_THROUGH_SPONSOR_NAME() + "\",\""+
+					awd.getSP_LEV_1()+ "\",\""+
+					awd.getSP_LEV_2()+"\",\""+
+					awd.getSP_LEV_3()+"\""
+					);
+		}
+		printWriter.close();
 	}
 
-	public void saveDistinctSponsors(Map<String, Award> awd_entries, String filePath) {
+	private void saveDistincxtSponsors(Map<String, Award> awd_entries, String filePath) throws FileNotFoundException {
 		Set<String> distinctSponsors = new HashSet<String>();
 		for(Award awd: awd_entries.values()){
 			distinctSponsors.add(awd.getAWARD_PROP_SPONSOR_NAME());
 		}
 		PrintWriter printWriter;
-		try {
-			printWriter = new PrintWriter (filePath);	
-			for(String sponsor: distinctSponsors){
-				printWriter.println("\""+sponsor+"\"");
-			}
-		}catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} 
+		printWriter = new PrintWriter (filePath);	
+		for(String sponsor: distinctSponsors){
+			printWriter.println("\""+sponsor+"\"");
+		}
+		printWriter.close();
 	}
 
-	public void mergeData(List<Person_NetIdDeptMap> list, Map<String, Award> awd_entries2, Map<String, Investigator> inv_entries2, File file) {
+	private void mergeData(List<Person_NetIdDeptMap> list, Map<String, Award> awd_entries2, Map<String, Investigator> inv_entries2, File file) throws FileNotFoundException {
 		PrintWriter printWriter;
 		int counter = 0;
-		try {
-			Set<String> investigators = inv_entries2.keySet();
-			printWriter = new PrintWriter (file.getAbsolutePath());	
-			for(String inv: investigators){
-				String prjId = inv.substring(0, inv.indexOf("-"));
-				Award award = awd_entries2.get(prjId);
-				if(award == null) continue;
-				Investigator investigator = inv_entries2.get(inv);
-				Person_NetIdDeptMap entity = findMappedPerson(list, investigator.getINVPROJ_INVESTIGATOR_NETID()); 
-				if(entity == null) continue ;  // no investigator found
-				// Mapping the Department coming from the OSP Feed.
-				String deptId = award.getAWARD_PROP_DEPARTMENT_ID();
-				Department dept = getDeptURIFromControlFile(deptId);
+		Set<String> investigators = inv_entries2.keySet();
+		printWriter = new PrintWriter (file.getAbsolutePath());	
+		for(String inv: investigators){
+			String prjId = inv.substring(0, inv.indexOf("-"));
+			Award award = awd_entries2.get(prjId);
+			if(award == null) continue;
+			Investigator investigator = inv_entries2.get(inv);
+			Person_NetIdDeptMap entity = findMappedPerson(list, investigator.getINVPROJ_INVESTIGATOR_NETID()); 
+			if(entity == null) continue ;  // no investigator found
+			// Mapping the Department coming from the OSP Feed.
+			String deptId = award.getAWARD_PROP_DEPARTMENT_ID();
+			Department dept = getDeptURIFromControlFile(deptId);
 
-				if(dept == null || dept.getVivoURI() == null || dept.getVivoURI().isEmpty()){
-					printWriter.println(entity.getCollege()+"\t"+entity.getPersonURI()+"\t"+entity.getDept()+"\t"+entity.getDeptURI()+"\t\t"
-							+investigator.toString()+"\t"+award.toString()); 
-					counter++;
-					
-					//add not-found department in the list.
-					newDept.add(new Department(award.getAWARD_PROP_DEPARTMENT_ID(), award.getAWARD_PROP_DEPARTMENT(),award.getROLLUP_DEPT_NAME(), null));
-				}else{
-					printWriter.println(entity.getCollege()+"\t"+entity.getPersonURI()+"\t"+entity.getDept()+"\t"+entity.getDeptURI()+"\t"+dept.getVivoURI()+"\t"
-							+investigator.toString()+"\t"+award.toString()); 
-					counter++;
-				}				
-			}
-			printWriter.close();
-			System.out.println(counter+ " number of rows added in output file.");
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} 
+			if(dept == null || dept.getVivoURI() == null || dept.getVivoURI().isEmpty()){
+				printWriter.println(entity.getCollege()+"\t"+entity.getPersonURI()+"\t"+entity.getDept()+"\t"+entity.getDeptURI()+"\t\t"
+						+investigator.toString()+"\t"+award.toString()); 
+				counter++;
+
+				//add not-found department in the list.
+				newDept.add(new Department(award.getAWARD_PROP_DEPARTMENT_ID(), award.getAWARD_PROP_DEPARTMENT(),award.getROLLUP_DEPT_NAME(), null));
+			}else{
+				printWriter.println(entity.getCollege()+"\t"+entity.getPersonURI()+"\t"+entity.getDept()+"\t"+entity.getDeptURI()+"\t"+dept.getVivoURI()+"\t"
+						+investigator.toString()+"\t"+award.toString()); 
+				counter++;
+			}				
+		}
+		printWriter.close();
+		LOGGER.info("GRANTS:" + counter+ " number of rows added in the output TSV file.");
 	}
 
 	private Department getDeptURIFromControlFile(String deptId) {
 		return departmentMap.get(deptId);
 	}
 
-	private void generateDeptMapFile(File file){
+	private void generateDeptMapFile(File file) throws IOException{
 		departmentMap = generateDeptMap(file);
 	}
-	private Map<String, Department> generateDeptMap(File file) {
+	private Map<String, Department> generateDeptMap(File file) throws IOException {
 		Map<String, Department> map = new HashMap<String, Department>(); 
 		BufferedReader br = null;
 		String line = "";
-		try {
-			br = new BufferedReader(new FileReader(file));
-			while ((line = br.readLine()) != null) {
-				CSVReader reader = new CSVReader(new StringReader(line),',','\"');	
-				String[] nextLine;
-				while ((nextLine = reader.readNext()) != null) {
-					try {
-						String deptId = nextLine[0].trim();
-						String deptName = nextLine[1].trim();
-						String rollupName = nextLine[2].trim();
-						String deptScholarsURI = nextLine[3].trim();
-						Department dept = new Department(deptId, deptName, rollupName, deptScholarsURI);
-						map.put(deptId, dept);
-					}catch (ArrayIndexOutOfBoundsException exp) {
-						exp.printStackTrace();
-					}
-				}
-				reader.close();
-			}
-		}catch (FileNotFoundException e) {
-			System.err.println(line);
-			e.printStackTrace();
-		} catch (IOException e) {
-			System.err.println(line);
-			e.printStackTrace();
-		} finally {
-			if (br != null) {
+		br = new BufferedReader(new FileReader(file));
+		while ((line = br.readLine()) != null) {
+			CSVReader reader = new CSVReader(new StringReader(line),',','\"');	
+			String[] nextLine;
+			while ((nextLine = reader.readNext()) != null) {
 				try {
-					br.close();
-				} catch (IOException e) {
-					e.printStackTrace();
+					String deptId = nextLine[0].trim();
+					String deptName = nextLine[1].trim();
+					String rollupName = nextLine[2].trim();
+					String deptScholarsURI = nextLine[3].trim();
+					Department dept = new Department(deptId, deptName, rollupName, deptScholarsURI);
+					map.put(deptId, dept);
+				}catch (ArrayIndexOutOfBoundsException exp) {
+					exp.printStackTrace();
 				}
 			}
+			reader.close();
 		}
-		System.out.println("Administring department mapper file size:"+ map.size());
+		br.close();
+		LOGGER.info("GRANTS: Administring department mapper file size:"+ map.size());
 		return map;
 	}
 
@@ -247,7 +230,7 @@ public class InputFilesReader {
 		return null;
 	}
 
-	public List<Person_NetIdDeptMap> readPersonNetIdDeptMapperFile(File file) {
+	private List<Person_NetIdDeptMap> readPersonNetIdDeptMapperFile(File file) {
 		List<Person_NetIdDeptMap> list = new ArrayList<Person_NetIdDeptMap>();
 		CSVReader reader;
 		try {
@@ -266,28 +249,24 @@ public class InputFilesReader {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		LOGGER.info("GRANTS: Person to NetId/Dept Map size"+ list.size()); 
 		return list;
 	}
-	
-	private Map<String, Grant> readAllGrantsFile(String filePath) {
+
+	private Map<String, Grant> readAllGrantsFile(String filePath) throws IOException {
 		Map<String, Grant> grants = new HashMap<String, Grant>();
 		Reader in;
-		try {
-			in = new FileReader(filePath);
-			Iterable<CSVRecord> records = null;
-			records = CSVFormat.EXCEL.withDelimiter(',').withQuote('"').parse(in);
-			for (CSVRecord record : records) {
-				String id = record.get(0);
-				String uri = record.get(1);
-				String typeURI = record.get(2);
-				Grant g = new Grant(id, uri, typeURI);
-				grants.put(id, g);
-			}
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		}catch (IOException e) {
-			e.printStackTrace();
+		in = new FileReader(filePath);
+		Iterable<CSVRecord> records = null;
+		records = CSVFormat.EXCEL.withDelimiter(',').withQuote('"').parse(in);
+		for (CSVRecord record : records) {
+			String id = record.get(0);
+			String uri = record.get(1);
+			String typeURI = record.get(2);
+			Grant g = new Grant(id, uri, typeURI);
+			grants.put(id, g);
 		}
+		LOGGER.info("GRANTS: Existing grants in Scholars"+ grants.size()); 
 		return grants;
 	}
 

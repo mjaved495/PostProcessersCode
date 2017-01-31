@@ -33,27 +33,23 @@ import org.xml.sax.SAXException;
 import com.opencsv.CSVReader;
 
 import edu.cornell.scholars.config.Configuration;
+import edu.cornell.scholars.workflow1.MainEntryPoint_WorkFlow1;
 
 public class KeywordMinerEntryPoint {
 
 	private static final Logger LOGGER = Logger.getLogger(KeywordMinerEntryPoint.class.getName());
 
 	//input file names
-	private final static String ARTICLE_FILENAME = Configuration.QUERY_RESULTSET_FOLDER +"/"+ Configuration.date +"/"+
-			Configuration.ARTICLE_2_TITLE_ABSTRACT_MAP_FILENAME;
-	private final static String ALL_KW_FILENAME = Configuration.QUERY_RESULTSET_FOLDER +"/"+ Configuration.date +"/"+
-			Configuration.ALL_KEYWORDS_FILENAME;
-	private final static String ALL_MESHTERM_FILENAME = Configuration.QUERY_RESULTSET_FOLDER +"/"+ Configuration.date +"/"+
-			Configuration.ALL_MESHTERMS_FILENAME;
-	private final static String ARTICLE_2_KW_FILENAME = Configuration.QUERY_RESULTSET_FOLDER +"/"+ Configuration.date +"/"+
-			Configuration.ARTICLE_2_KEYWORDSET_MAP_FILENAME;
-	private final static String ARTICLE_2_MESH_FILENAME = Configuration.QUERY_RESULTSET_FOLDER +"/"+ Configuration.date +"/"+
-			Configuration.ARTICLE_2_MESHTERM_MAP_FILENAME;
-			
+	private static String ARTICLE_FILENAME = null;
+	private static String ALL_KW_FILENAME = null;
+	private static String ALL_MESHTERM_FILENAME = null;
+	private static String ARTICLE_2_KW_FILENAME = null;
+	private static String ARTICLE_2_MESH_FILENAME = null;
+
 	//output file names
-	private final static String ARTICLE_MAP_CSVDATA_FILEPATH = Configuration.INF_KEYWORDS_CSV;
-	private final static String ARTICLE_MAP_NTDATA_FILEPATH =  Configuration.INF_KEYWORDS_NT;
-	
+	private static String ARTICLE_MAP_CSVDATA_FILEPATH = null;
+	private static String ARTICLE_MAP_NTDATA_FILEPATH =  null;
+
 	private static int count = 0;
 	private static int articlecount = 0;
 	private static int articleLevelMinedWordCount = 0;
@@ -62,14 +58,16 @@ public class KeywordMinerEntryPoint {
 	private Set<Mesh> allMesh = null;
 	private List<ArticleEntries> article_rows = null;
 	private Set<String> matchWords = new HashSet<String>();
-	
+
 	private Map<String, String> meshMap = new HashMap<String, String>();
 	private Map<String, Set<String>> articleMeshMap = new HashMap<String, Set<String>>();
 	private Map<String, Set<String>> articleKWMap = new HashMap<String, Set<String>>();
-	
+
 	public static void main(String[] args) {
-		KeywordMinerEntryPoint obj = new KeywordMinerEntryPoint();
 		try {
+			MainEntryPoint_WorkFlow1.init("resources/setup.properties");
+			KeywordMinerEntryPoint obj = new KeywordMinerEntryPoint();
+			obj.setLocalDirectories();
 			obj.runProcess();
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -78,6 +76,26 @@ public class KeywordMinerEntryPoint {
 		} catch (SAXException e) {
 			e.printStackTrace();
 		}
+	}
+
+	private void setLocalDirectories() {
+		ARTICLE_FILENAME = Configuration.QUERY_RESULTSET_FOLDER +"/"+ Configuration.date +"/"+
+				Configuration.ARTICLE_2_TITLE_ABSTRACT_MAP_FILENAME;
+		ALL_KW_FILENAME = Configuration.QUERY_RESULTSET_FOLDER +"/"+ Configuration.date +"/"+
+				Configuration.ALL_KEYWORDS_FILENAME;
+		ALL_MESHTERM_FILENAME = Configuration.QUERY_RESULTSET_FOLDER +"/"+ Configuration.date +"/"+
+				Configuration.ALL_MESHTERMS_FILENAME;
+		ARTICLE_2_KW_FILENAME = Configuration.QUERY_RESULTSET_FOLDER +"/"+ Configuration.date +"/"+
+				Configuration.ARTICLE_2_KEYWORDSET_MAP_FILENAME;
+		ARTICLE_2_MESH_FILENAME = Configuration.QUERY_RESULTSET_FOLDER +"/"+ Configuration.date +"/"+
+				Configuration.ARTICLE_2_MESHTERM_MAP_FILENAME;
+
+		//output file names
+		ARTICLE_MAP_CSVDATA_FILEPATH = Configuration.POSTPROCESS_RESULTSET_FOLDER +"/"+ Configuration.date 
+				+"/"+ Configuration.INFERRED_KEYWORDS_FOLDER +"/"+ Configuration.INF_KEYWORDS_CSV;
+		ARTICLE_MAP_NTDATA_FILEPATH =  Configuration.POSTPROCESS_RESULTSET_FOLDER +"/"+ Configuration.date 
+				+"/"+ Configuration.INFERRED_KEYWORDS_FOLDER +"/"+ Configuration.INF_KEYWORDS_NT;
+		
 	}
 
 	public void runProcess() throws IOException, ParserConfigurationException, SAXException {
@@ -155,17 +173,17 @@ public class KeywordMinerEntryPoint {
 			}
 			articleEntry.setMinedKeywordCount(articleLevelMinedWordCount);
 		}
-		LOGGER.info(count+" one word entry matches");
-		LOGGER.info(articlecount+" article matches");
+		LOGGER.info("Inferred Keywords: "+count+" keywords are inferred.");
+		LOGGER.info("Inferred Keywords: "+articlecount+" article matches");
 
 	}
 
 	private boolean process(ArticleEntriesData articleEntry, Set<String> titleStrings, 
 			Set<String> keywords, Set<Mesh> pubmeds, Set<String> distinctTermsFoundForAnArticle) {
 		String uri = articleEntry.getArticleURI();
-		if(uri.equals("http://scholars.cornell.edu/individual/UR-6864")){
-			//System.out.println("uu");
-		}
+		//		if(uri.equals("http://scholars.cornell.edu/individual/UR-6864")){
+		//			//System.out.println("uu");
+		//		}
 		boolean matchFound=false;
 		Set<String> UCKeywords = new HashSet<String>();
 		for(String keyword : keywords){
@@ -337,7 +355,7 @@ public class KeywordMinerEntryPoint {
 		return map;
 	}
 
-	public Set<Mesh> getMeshLines (File xmlFile) throws ParserConfigurationException, SAXException, IOException{
+	private Set<Mesh> getMeshLines (File xmlFile) throws ParserConfigurationException, SAXException, IOException{
 		Set<Mesh> rows = new HashSet<Mesh>();
 		DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
 		DocumentBuilder dBuilder;
@@ -369,7 +387,7 @@ public class KeywordMinerEntryPoint {
 		return rows;
 	}
 
-	public Set<String> getLines (File file) throws IOException{
+	private Set<String> getLines (File file) throws IOException{
 		Set<String> rows = new HashSet<String>();
 		CSVReader reader;
 		reader = new CSVReader(new FileReader(file),',','\"');

@@ -1,4 +1,4 @@
-package edu.cornell.scholars.workflow2;
+package edu.cornell.scholars.workflow22;
 
 import java.io.File;
 import java.io.IOException;
@@ -12,9 +12,9 @@ import edu.cornell.scholars.collaboration.gridmapper.WOSDataFileReaderGRIDMapper
 import edu.cornell.scholars.collaboration.gridmapper.WosQueryResultsSetDataParser;
 import edu.cornell.scholars.config.Configuration;
 
-public class MainEntryPoint_WorkFlow2 {
+public class MainEntryPoint_WorkFlow2_2 {
 
-	private static final Logger LOGGER = Logger.getLogger( MainEntryPoint_WorkFlow2.class.getName() );
+	private static final Logger LOGGER = Logger.getLogger( MainEntryPoint_WorkFlow2_2.class.getName() );
 	
 	public static void main(String[] args) {
 		try {
@@ -24,7 +24,7 @@ public class MainEntryPoint_WorkFlow2 {
 				String propFilePath = "resources/setup.properties";
 				init(propFilePath);
 			}
-			MainEntryPoint_WorkFlow2 mep = new MainEntryPoint_WorkFlow2();
+			MainEntryPoint_WorkFlow2_2 mep = new MainEntryPoint_WorkFlow2_2();
 			mep.runProcess();
 		} catch (IOException e) {
 			e.printStackTrace();
