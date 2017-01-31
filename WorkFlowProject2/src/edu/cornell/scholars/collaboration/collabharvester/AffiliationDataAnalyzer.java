@@ -26,11 +26,12 @@ import edu.cornell.scholars.config.Configuration;
 
 public class AffiliationDataAnalyzer {
 
-	private static String AFFILIATION_COLLEGE_MAP_FILE = Configuration.AFFILIATION_STRING_TO_COLLEGE_MAP_FILE;
-	private static String ORGCODE_FILE = Configuration.ORG_ORGCODE_MAP_FILE;
+	private static String AFFILIATION_COLLEGE_MAP_FILE = Configuration.SUPPL_FOLDER +"/"+Configuration.AFFILIATION_STRING_TO_COLLEGE_MAP_FILE;
+	private static String ORGCODE_FILE = Configuration.SUPPL_FOLDER + "/"+ Configuration.ORG_ORGCODE_MAP_FILE;
 	
 	//TODO NOT USED FOR NOW. SHOULD WORK ON IT IN FUTURE.
-	public  static String NF_AFFILIATION_SET_FILE = Configuration.NOTFOUND_AFFILIATION_SET_FILE;
+	public  static String NF_AFFILIATION_SET_FILE = Configuration.POSTPROCESS_RESULTSET_FOLDER  + "/" + Configuration.date + "/"
+			+ Configuration.COLLABORATION_FOLDER+"/"+ Configuration.COLLAB_INTERNAL_FOLDER+"/" + Configuration.NOTFOUND_AFFILIATION_SET_FILE;
 	
 	// created a map of <wosId - Article_TSV entries>
 	// created an org code map <orgLabel - orgCode>

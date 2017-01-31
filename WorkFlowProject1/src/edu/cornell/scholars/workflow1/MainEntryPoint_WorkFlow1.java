@@ -1,6 +1,11 @@
 package edu.cornell.scholars.workflow1;
 
+import java.io.File;
 import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -9,6 +14,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.xml.sax.SAXException;
 
 import edu.cornell.scholars.collaboration.harvester.CollabHarvesterMainEntryPoint;
+import edu.cornell.scholars.config.Configuration;
 import edu.cornell.scholars.journalsubjectareamapper.JournalToSubjectAreaMapEntryPoint;
 import edu.cornell.scholars.keywordcloudgenerator.UniversityLevelKeywordCloudGenerator;
 import edu.cornell.scholars.keywordminer.KeywordMinerEntryPoint;
@@ -17,14 +23,31 @@ import edu.cornell.scholars.ospgrants.OSPGrantsEntryPoint;
 public class MainEntryPoint_WorkFlow1 {
 
 	private static final Logger LOGGER = Logger.getLogger( MainEntryPoint_WorkFlow1.class.getName() );
-	
+
 	public static void main(String[] args) {
-		MainEntryPoint_WorkFlow1 mep = new MainEntryPoint_WorkFlow1();
-		mep.runProcess();
+		try {
+			if(args.length > 0){
+				init(args[0]);
+			}else{
+				String propFilePath = "resources/setup.properties";
+				init(propFilePath);
+			}
+			MainEntryPoint_WorkFlow1 mep = new MainEntryPoint_WorkFlow1();
+			mep.runProcess();
+
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public static void init(String propFilePath) throws IOException{
+		String date = getCurrentDate();
+		Configuration.setDate(date);
+		generateDirectories(date, propFilePath);
 	}
 
 	private void runProcess() {
-		
+
 		//Run the InferredKeywords Process
 		LOGGER.info("\n\n---------- STARTING INFERRED KEYWORD HARVEST PROCESS----------");
 		try{
@@ -48,7 +71,7 @@ public class MainEntryPoint_WorkFlow1 {
 		}catch(Exception exp){
 			LOGGER.log(Level.WARNING, "\n\n---------ERROR OCCURED:----------", exp);
 		}
-		
+
 		//Run the journal to subject area map process
 		LOGGER.info("\n\n---------- STARTING JOURNAL TO SUBJECT AREA MAP PROCESS----------");
 		try{
@@ -56,7 +79,7 @@ public class MainEntryPoint_WorkFlow1 {
 		}catch(Exception exp){
 			LOGGER.log(Level.WARNING, "\n\n---------ERROR OCCURED:----------", exp);
 		}
-		
+
 		//Run the WOS query builder process
 		LOGGER.info("\n\n---------- STARTING WOS QUERY BUILDER PROCESS----------");
 		try{
@@ -69,36 +92,126 @@ public class MainEntryPoint_WorkFlow1 {
 		// SAVE THE FILES (DOWNLOADED FROM WOS) IN MAC-UTF-8 FORMAT.
 		// SAVE THE FILES (DOWNLOADED FROM WOS) IN MAC-UTF-8 FORMAT.
 		// SAVE THE FILES (DOWNLOADED FROM WOS) IN MAC-UTF-8 FORMAT.
-		
+
 		LOGGER.info("\n\n---------- ALL PROCESSES COMPLETED----------");
 	}
 
+	
+	
+	
+	
+	
+	/**
+	 * Reads all the articles and infer the keywords. Reason to read all the articles 
+	 * is as we do not know which article is updated in near past. This means we need to 
+	 * process all the articles for now and inferred keyword graph has to be replaced 
+	 * with every call.
+	 * 
+	 * Inferred Keyword Cloud Graph has to be replaced every time.
+	 * 
+	 * @throws IOException
+	 * @throws ParserConfigurationException
+	 * @throws SAXException
+	 */
 	private void runInferredKeywordProcess() throws IOException, ParserConfigurationException, SAXException {
 		KeywordMinerEntryPoint kmep = new KeywordMinerEntryPoint();
 		kmep.runProcess();
 	}
 	
+	/**
+	 * Reads all keywords, mesh terms and inferred terms. 
+	 * Currently the word type is only one, either KEYWORD or MESH. 
+	 * It could be either or both of them. Once, we start inferring from 
+	 * additional vocabularies, the type could be
+	 * KEYWORD, MESH or INFERRED.
+	 * 
+	 * JSON file has to be replaced every time.
+	 * 
+	 * @throws IOException
+	 * @throws ParserConfigurationException
+	 * @throws SAXException
+	 */
 	private void runHomepageKeywordCloudProcess() throws IOException, ParserConfigurationException, SAXException {
 		UniversityLevelKeywordCloudGenerator obj = new UniversityLevelKeywordCloudGenerator();
 		obj.runProcess();	
 	}
-	
-	private void runGrantsDataProcess() {
+
+	/**
+	 * Reads the All-Grant file and identifies new grants.
+	 * CSV and RDF is generated only for the new grants.
+	 * 
+	 * New RDF triples should be added in the existing grants graph.
+	 * 
+	 * @throws NoSuchAlgorithmException
+	 * @throws IOException
+	 * @throws ParserConfigurationException
+	 * @throws SAXException
+	 */
+	private void runGrantsDataProcess() throws NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException {
 		OSPGrantsEntryPoint ospep = new OSPGrantsEntryPoint();
 		ospep.runProcess();
 	}
-	
-	private void runWOSQueryBuilder() {
-		CollabHarvesterMainEntryPoint harvester = new CollabHarvesterMainEntryPoint();
-		harvester.runProcess();
-	}
-	
-	private void runJournalSubjectAreaMapProcess() {
+
+	/**
+	 * The query will return only those Journals that do not have any subject area associated.
+	 * This means, we will have RDF triples for only new Journals.
+	 * 
+	 * New RDF triples should be added in the existing journal 2 subject area graph.
+	 * 
+	 * @throws NoSuchAlgorithmException
+	 * @throws IOException
+	 * @throws InterruptedException
+	 */
+	private void runJournalSubjectAreaMapProcess() throws NoSuchAlgorithmException, IOException, InterruptedException {
 		JournalToSubjectAreaMapEntryPoint jrnlep = new JournalToSubjectAreaMapEntryPoint();
 		jrnlep.runProcess();
 	}
 
 	
+	private void runWOSQueryBuilder() throws IOException {
+		CollabHarvesterMainEntryPoint harvester = new CollabHarvesterMainEntryPoint();
+		harvester.runProcess();
+	}
+	
 
+	private static String getCurrentDate() {
+		String date = null;
+		Date now = new Date();
+		SimpleDateFormat dateFormatter = new SimpleDateFormat("E, y-M-d 'at' h:m:s a z");
+		dateFormatter = new SimpleDateFormat("yyyy-MM-dd");
+		date = dateFormatter.format(now);
+		LOGGER.info(date);
+		return date;
+	}
 
+	private static void generateDirectories(String date, String propFilePath) throws IOException {
+
+		// SET FILEPATHS
+		SetupPropertyValues properties = new SetupPropertyValues();
+		Map<String, String> map = properties.getPropValues(propFilePath);
+		Configuration.setQUERY_RESULTSET_FOLDER(map.get("QUERY_RESULTSET_FOLDER"));
+		Configuration.setPOSTPROCESS_RESULTSET_FOLDER(map.get("POSTPROCESS_RESULTSET_FOLDER"));
+		Configuration.setSUPPL_FOLDER(map.get("SUPPL_FOLDER"));
+
+		// CREATE NEW DIRECTORIES
+		createFolder(new File(Configuration.POSTPROCESS_RESULTSET_FOLDER+"/"+date+"/collab/external"));
+		createFolder(new File(Configuration.POSTPROCESS_RESULTSET_FOLDER+"/"+date+"/collab/internal"));
+		createFolder(new File(Configuration.POSTPROCESS_RESULTSET_FOLDER+"/"+date+"/grant"));
+		createFolder(new File(Configuration.POSTPROCESS_RESULTSET_FOLDER+"/"+date+"/inferredkeywords"));
+		createFolder(new File(Configuration.POSTPROCESS_RESULTSET_FOLDER+"/"+date+"/kwclouds"));
+		createFolder(new File(Configuration.POSTPROCESS_RESULTSET_FOLDER+"/"+date+"/subjectarea"));
+
+		createFolder(new File(Configuration.QUERY_RESULTSET_FOLDER+"/"+date+"/wosdata"));
+
+	}
+
+	private static void createFolder(File file) {
+		if (!file.exists()) {
+			if (file.mkdirs()) {
+				LOGGER.info(file.getAbsolutePath()+" folder created!");
+			} else {
+				LOGGER.throwing("MainEntryPoint_WorkFlow1", "createFolder", new Throwable("EXCEPTION: Could not create folder..."));
+			}
+		}
+	}
 }

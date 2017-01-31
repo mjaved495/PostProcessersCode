@@ -25,12 +25,14 @@ import edu.cornell.scholars.config.Configuration;
 
 public class WOSTSVFileReader {
 	
-	private final static String WOSDATAFILE = Configuration.WOS_DATA_FILE;
-	private final static String AFFILIATION_GRID_FILE = Configuration.AFF_GRID_MAP;
-	private final static String WOS_PERSON_LIST_MASTER = Configuration.WOS_PERSON_NETID_MASTER_FILE;
-	private final static String WOS_PERSON_LIST_CURRENT = Configuration.WOS_PERSON_NETID_CURRENT_FILE;
+	private final static String WOSDATAFILE = Configuration.QUERY_RESULTSET_FOLDER+"/"+Configuration.date+"/"
+			+Configuration.WOS_DATA_FOLDER+"/"+Configuration.WOS_DATA_FILENAME;;
+	private final static String AFFILIATION_GRID_FILE = Configuration.SUPPL_FOLDER+"/"+Configuration.AFF_GRID_MAP;
+	private final static String WOS_PERSON_LIST_MASTER = Configuration.SUPPL_FOLDER+"/"+Configuration.WOS_PERSON_NETID_MASTER_FILE;
+	private final static String WOS_PERSON_LIST_CURRENT = Configuration.QUERY_RESULTSET_FOLDER+"/"+Configuration.date+"/"+Configuration.WOS_PERSON_NETID_CURRENT_FILE;
 	
-	private final static String INT_COLLAB_CSV = Configuration.INT_COLLABORATIONS_FILE_CSV;
+	private final static String INT_COLLAB_CSV = Configuration.POSTPROCESS_RESULTSET_FOLDER   + "/" + Configuration.date + "/"
+			+Configuration.COLLABORATION_FOLDER+"/"+Configuration.COLLAB_INTERNAL_FOLDER+"/" + Configuration.INT_COLLABORATIONS_FILE_CSV;
 	
 	private List<Article_TSV> data = null;
 	private Map<String, GridModel> gridDataMap = null;

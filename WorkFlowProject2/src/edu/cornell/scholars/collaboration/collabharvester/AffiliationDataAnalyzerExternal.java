@@ -53,9 +53,10 @@ public class AffiliationDataAnalyzerExternal {
 	}
 
 	private void populateLists() {
-		usaStateList = readFile(Configuration.USA_STATE_FILE);	
-		countryList = readFile(Configuration.COUNTRIES_FILE);
-		List<ArticleToIdMap> articleURIMap = readArtile2IdMapFile(Configuration.ARTICLE_2_WOS_PUBMED_ID_MAP_FILE_CSV);
+		usaStateList = readFile(Configuration.SUPPL_FOLDER +"/"+Configuration.USA_STATE_FILE);	
+		countryList = readFile(Configuration.SUPPL_FOLDER +"/"+Configuration.COUNTRIES_FILE);
+		List<ArticleToIdMap> articleURIMap = readArtile2IdMapFile(Configuration.QUERY_RESULTSET_FOLDER+"/"+Configuration.date+
+				"/"+Configuration.ARTICLE_2_WOS_PUBMED_ID_MAP_FILE_CSV);
 		id2uriMap = prepareMap(articleURIMap);
 	}
 
@@ -77,8 +78,10 @@ public class AffiliationDataAnalyzerExternal {
 
 	public void processCollaborationData(Set<Article_TSV> article, Map<String, AffiliationModel> affiliation_college_map, Map<String, GridModel> gridMap){
 
-
-		if (noCornellAuthorAssociated(article)) return;  // if there is not Cornell Author associated, Return.
+		// if there is not Cornell Author associated, Return.
+		// This may happen for those articles that were published 
+		// before faculty joins Cornell.
+		if (noCornellAuthorAssociated(article)) return;  
 
 		Set<String> authorNames = new HashSet<String>();
 		ExternalCollaboration collabEntry = new ExternalCollaboration();
@@ -328,9 +331,17 @@ public class AffiliationDataAnalyzerExternal {
 				}
 			}
 		}
-		save(id2countrycountmap, Configuration.EXT_COLLABORATIONS_COUNT_CSV);
-		createJSONfile(Configuration.EXT_COLLABORATIONS_FILE_JSON);
-		createCSVfile(Configuration.EXT_COLLABORATIONS_FILE_CSV);
+		String coutFilePath = Configuration.POSTPROCESS_RESULTSET_FOLDER   + "/" + Configuration.date + "/"+ Configuration.COLLABORATION_FOLDER+"/"
+				+ Configuration.COLLAB_EXTERNAL_FOLDER+"/" + Configuration.EXT_COLLABORATIONS_COUNT_CSV;
+		save(id2countrycountmap, coutFilePath);
+		
+		String jsonFilePath = Configuration.POSTPROCESS_RESULTSET_FOLDER   + "/" + Configuration.date + "/"+ Configuration.COLLABORATION_FOLDER+"/"+ Configuration.COLLAB_EXTERNAL_FOLDER+"/" + 
+				Configuration.EXT_COLLABORATIONS_FILE_JSON;
+		createJSONfile(jsonFilePath);
+		
+		String csvFilePath = Configuration.POSTPROCESS_RESULTSET_FOLDER   + "/" + Configuration.date + "/"
+				+Configuration.COLLABORATION_FOLDER+"/"+Configuration.COLLAB_EXTERNAL_FOLDER+"/" + Configuration.EXT_COLLABORATIONS_FILE_CSV;
+		createCSVfile(csvFilePath);
 		performAnalysis(extCollab);
 	}
 

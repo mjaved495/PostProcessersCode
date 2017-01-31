@@ -18,6 +18,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Logger;
 
 import org.apache.jena.rdf.model.Literal;
 import org.apache.jena.rdf.model.Model;
@@ -34,14 +35,19 @@ import edu.cornell.scholars.config.Configuration;
 
 public class RDFBuilder {
 
+	private static final Logger LOGGER = Logger.getLogger( RDFBuilder.class.getName() );
+	
+	
 	// input file names
 	public static String ORG_LIST_MASTER = Configuration.QUERY_RESULTSET_FOLDER + "/" + Configuration.date + "/"+
 			Configuration.ALL_ORGANIZATION_MAP_FILENAME;
-	public static String INPUT_TXT_FILE = Configuration.OSP_GRANT_TXT;
-	
+	public static String INPUT_TXT_FILE = Configuration.POSTPROCESS_RESULTSET_FOLDER + "/" + Configuration.date  +"/"+ 
+			Configuration.GRANTS_FOLDER +"/"+ Configuration.OSP_GRANT_TXT;
+
 	//output file names
-	public static String OUTPUT_NT_FILE = Configuration.OSP_GRANT_NT;
-	
+	public static String OUTPUT_NT_FILE = Configuration.POSTPROCESS_RESULTSET_FOLDER + "/" + Configuration.date  +"/"+ 
+			Configuration.GRANTS_FOLDER +"/"+ Configuration.OSP_GRANT_NT;
+
 	public static String SCHOLARS_IND = "http://scholars.cornell.edu/individual/";
 	public static String SCHOLARS_NS = "http://scholars.cornell.edu/ontology/vivoc.owl#";
 	public static String SCHOLARS_GRANT_NS = "http://scholars.cornell.edu/ontology/ospcu.owl#";
@@ -53,25 +59,27 @@ public class RDFBuilder {
 	public Map<String, Double> dept_amnt = new HashMap<String, Double>();
 	public Map<String, Integer> dept_count = new HashMap<String, Integer>();
 	public Map<String, Double> fundOrg = new HashMap<String, Double>();
-	
+
 	public static void main(String[] args) {
 		RDFBuilder builder = new RDFBuilder();
-		builder.runProcess();
+		try {
+			builder.runProcess();
+		} catch (NoSuchAlgorithmException | IOException e) {
+			e.printStackTrace();
+		}
 	}
-	
-	
-	public void runProcess() {
+
+
+	public void runProcess() throws NoSuchAlgorithmException, IOException {
 		generateRDF(INPUT_TXT_FILE, OUTPUT_NT_FILE);
 	}
 
-	public void generateRDF(String input , String output) {
-		
+	private void generateRDF(String input , String output) throws IOException, NoSuchAlgorithmException {
+
 		File inputFile = new File(input);
 
 		Map<String, String> org_map = readOrgFile(ORG_LIST_MASTER);
-		
-		//TODO This data file should contain the new grants ONLY. This part of work is not done yet. 
-		// It is the list of all grants current or vivo-existing grants.
+
 		List<GrantModel> data = readFile(inputFile);
 		Set<Integer> uniqueKeys = gen(data.size());
 
@@ -88,7 +96,7 @@ public class RDFBuilder {
 		Resource DTV = model.createResource(VIVO_NS+"DateTimeValue");
 		Resource DTI = model.createResource(VIVO_NS+"DateTimeInterval");
 		Resource fundingOrganization = model.createResource(VIVO_NS+"FundingOrganization");
-				
+
 		Property RO_0000052 = model.createProperty(OBO_NS+"RO_0000052");
 		Property RO_0000053 = model.createProperty(OBO_NS+"RO_0000053");
 		Property vivoRelates = model.createProperty(VIVO_NS+"relates");
@@ -145,9 +153,9 @@ public class RDFBuilder {
 					adminRole.addProperty(RO_0000052, dept);
 					dept.addProperty(RO_0000053, adminRole);
 				}
-				
+
 				collectFundingOrg(obj);
-				
+
 				Resource dti = model.createResource(gt.getURI()+"-DTI");
 				dti.addProperty(RDF.type, DTI);
 				gt.addProperty(dtiProp, dti);
@@ -176,9 +184,9 @@ public class RDFBuilder {
 					sponsor.addProperty(vivoAssigns, gt);
 					sponsor.addProperty(RDF.type, fundingOrganization);
 					org_map.put(sponsorName, sponsor.getURI());
-					
+
 				}else{
-					System.err.println("Could not create new sponsor organization URI.");
+					LOGGER.warning("Could not create new sponsor organization URI.");
 				}
 
 				Resource startDTV = model.createResource(gt.getURI()+"-DTI-S");
@@ -247,7 +255,7 @@ public class RDFBuilder {
 		}
 		saveRDFGraph(model, output);
 	}
-	
+
 	private void collectFundingOrg(GrantModel obj) {
 		String org = obj.getSponsorName().replaceAll("\"", "");
 		if(fundOrg.get(org) == null){
@@ -260,112 +268,96 @@ public class RDFBuilder {
 	}
 
 
-	public Map<String, String> readOrgFile(String file) {
+	private Map<String, String> readOrgFile(String file) throws IOException {
 		Map<String, String> map = new HashMap<String, String>();
 		CSVReader reader;
-		try {
-			reader = new CSVReader(new FileReader(file),'|');
-			String [] token;	
-			while ((token = reader.readNext()) != null) {
-				map.put(token[1], token[0]);
-			}
-		} catch (IOException e) {
-			e.printStackTrace();
+		reader = new CSVReader(new FileReader(file),'|');
+		String [] token;	
+		while ((token = reader.readNext()) != null) {
+			map.put(token[1], token[0]);
 		}
+		reader.close();
 		return map;
 	}
 
-	public Set<Integer> gen(int size) {
+	private Set<Integer> gen(int size) throws NoSuchAlgorithmException {
 		Set<Integer> set = new HashSet<>();
-		try {
-			SecureRandom randomGenerator = SecureRandom.getInstance("SHA1PRNG");         
-			while(set.size() < size){
-				int s = randomGenerator.nextInt(99999);
-				if(s > 9999){
-					set.add(s);
-				}
+		SecureRandom randomGenerator = SecureRandom.getInstance("SHA1PRNG");         
+		while(set.size() < size){
+			int s = randomGenerator.nextInt(99999);
+			if(s > 9999){
+				set.add(s);
 			}
-			return set;
-		} catch (NoSuchAlgorithmException nsae) {
-			// Forward to handler
 		}
-		return null;
+		return set;
 	}
 
-	private void saveRDFGraph(Model model, String output) {
-		System.out.println("osp grants triples count: "+model.listStatements().toList().size());
+	private void saveRDFGraph(Model model, String output) throws FileNotFoundException {
+		LOGGER.info("GRANTS: RDF triples count: "+model.listStatements().toList().size());
 		PrintWriter printer = null;
-		try {
-			printer = new PrintWriter(output);
-			model.write(printer, "N-Triples");
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		}finally{
-			printer.close();
-		}
+		printer = new PrintWriter(output);
+		model.write(printer, "N-Triples");
+		printer.close();
 	}
 
-	public List<GrantModel> readFile(File file) {
+	private List<GrantModel> readFile(File file) throws IOException {
+		LOGGER.info("GRANTS: Reading Grants TSV file..."+ file.getAbsolutePath());
 		List<GrantModel> data = new ArrayList<GrantModel>();
 		String r = null;
-		try{
-			FileInputStream is = new FileInputStream(file.getAbsolutePath());
-			InputStreamReader isr = new InputStreamReader(is, "UTF-8");
-			BufferedReader buf = new BufferedReader(isr);
-			ArrayList<String[]> rows = new ArrayList<String[]>();
-			String lineJustFetched = null;
-			String[] wordsArray;
-			while(true){
-				lineJustFetched = buf.readLine();
-				if(lineJustFetched == null){  
-					break; 
-				}else{
-					if(lineJustFetched.trim().length() == 0){
-						continue;
-					}
-					//System.out.println(lineJustFetched);
-					wordsArray = lineJustFetched.split("\t");
-					rows.add(wordsArray);
+		FileInputStream is = new FileInputStream(file.getAbsolutePath());
+		InputStreamReader isr = new InputStreamReader(is, "UTF-8");
+		BufferedReader buf = new BufferedReader(isr);
+		ArrayList<String[]> rows = new ArrayList<String[]>();
+		String lineJustFetched = null;
+		String[] wordsArray;
+		while(true){
+			lineJustFetched = buf.readLine();
+			if(lineJustFetched == null){  
+				break; 
+			}else{
+				if(lineJustFetched.trim().length() == 0){
+					continue;
 				}
+				//System.out.println(lineJustFetched);
+				wordsArray = lineJustFetched.split("\t");
+				rows.add(wordsArray);
 			}
-			GrantModel obj  = null;
-			for(int index = 0; index<rows.size();index++){
-				String[] nextLine = rows.get(index);
-				obj = new GrantModel();
-				obj.setUnit(nextLine[0].trim());
-				obj.setPersonURI(nextLine[1].trim());
-				obj.setDepartmentURI(nextLine[4].trim());
-				obj.setNetId(getLowercase(nextLine[5].trim()));
-				obj.setProjectId(nextLine[16].trim());
-				obj.setPersonRole(nextLine[12].trim());
-				obj.setInvId(nextLine[15].trim());
-				obj.setProposalId(nextLine[17].trim()); // not much useful
-				obj.setGrantTitle(nextLine[18].trim());
-				obj.setDepartmentId(nextLine[19].trim());
-				obj.setDepartmentName(nextLine[20].trim());
-				obj.setSponsorName(nextLine[21].trim());
-				obj.setSponsorId(nextLine[22].trim());
-				obj.setStartDate(nextLine[23].trim());
-				obj.setEndDate(nextLine[24].trim());
-				String amount = nextLine[25].trim();
-				if(amount.isEmpty()){
-					amount = "0";
-				}
-				obj.setGrantTotal(Double.parseDouble(amount));
-				obj.setGrantType(nextLine[26].trim());
-				obj.setSpLevel1(nextLine[29].trim());
-				obj.setSpLevel2(nextLine[30].trim());
-				obj.setSpLevel3(nextLine[31].trim());
-				obj.setRollupDeptName(nextLine[32].trim());
-				obj.setAwardStatus(nextLine[33].trim());
-				data.add(obj);
-			}
-			buf.close();
-		}catch(Exception e){
-			System.err.println(file.getName());
-			System.err.println(r);
-			e.printStackTrace();
 		}
+		GrantModel obj  = null;
+		for(int index = 0; index<rows.size();index++){
+			String[] nextLine = rows.get(index);
+			obj = new GrantModel();
+			obj.setUnit(nextLine[0].trim());
+			obj.setPersonURI(nextLine[1].trim());
+			obj.setDepartmentURI(nextLine[4].trim());
+			obj.setNetId(getLowercase(nextLine[5].trim()));
+			obj.setProjectId(nextLine[16].trim());
+			obj.setPersonRole(nextLine[12].trim());
+			obj.setInvId(nextLine[15].trim());
+			obj.setProposalId(nextLine[17].trim()); // not much useful
+			obj.setGrantTitle(nextLine[18].trim());
+			obj.setDepartmentId(nextLine[19].trim());
+			obj.setDepartmentName(nextLine[20].trim());
+			obj.setSponsorName(nextLine[21].trim());
+			obj.setSponsorId(nextLine[22].trim());
+			obj.setStartDate(nextLine[23].trim());
+			obj.setEndDate(nextLine[24].trim());
+			String amount = nextLine[25].trim();
+			if(amount.isEmpty()){
+				amount = "0";
+			}
+			obj.setGrantTotal(Double.parseDouble(amount));
+			obj.setGrantType(nextLine[26].trim());
+			obj.setSpLevel1(nextLine[29].trim());
+			obj.setSpLevel2(nextLine[30].trim());
+			obj.setSpLevel3(nextLine[31].trim());
+			obj.setRollupDeptName(nextLine[32].trim());
+			obj.setAwardStatus(nextLine[33].trim());
+			data.add(obj);
+		}
+		buf.close();
+		
+		LOGGER.info("GRANTS: Grants TSV file size:"+ data.size());
 		return data;
 	}
 

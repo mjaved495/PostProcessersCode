@@ -26,13 +26,14 @@ import edu.cornell.scholars.config.Configuration;
 public class WOSDataFileReaderGRIDMapper {
 
 	//input files
-	private final static String WOS_DATA_FILE =Configuration.WOS_DATA_FILE;
+	private final static String WOS_DATA_FILE = Configuration.QUERY_RESULTSET_FOLDER+"/"+Configuration.date+"/"
+			+Configuration.WOS_DATA_FOLDER+"/"+Configuration.WOS_DATA_FILENAME;
 	private final static String GRID_FILENAME = Configuration.SUPPL_FOLDER+"/"+Configuration.GRID_FILENAME;
-	private final static String COUNTRIES_FILE = Configuration.COUNTRIES_FILE;
-	private final static String USA_STATE_FILE = Configuration.USA_STATE_FILE;
+	private final static String COUNTRIES_FILE = Configuration.SUPPL_FOLDER +"/"+Configuration.COUNTRIES_FILE;
+	private final static String USA_STATE_FILE = Configuration.SUPPL_FOLDER +"/"+Configuration.USA_STATE_FILE;
 	
 	//output file
-	private final static String AFFILIATION_GRID_MAPPER_FILE = Configuration.AFF_GRID_MAP;
+	private final static String AFFILIATION_GRID_MAPPER_FILE = Configuration.SUPPL_FOLDER+"/"+Configuration.AFF_GRID_MAP;
 	
 	private Map<String, GridModel> gridMap = new HashMap<String, GridModel>();
 	private Map<String, GridModel> gridDataMap = new HashMap<String, GridModel>();
@@ -57,7 +58,7 @@ public class WOSDataFileReaderGRIDMapper {
 
 	public Map<String, GridModel> runProcess(String filePath){
 		List<Article_TSV> data = readFile(filePath);
-		List<String> countries = readCountriesList(Configuration.COUNTRIES_FILE);
+		List<String> countries = readCountriesList(COUNTRIES_FILE);
 		createAffiliationGRIDMap(affiliationStringSet, countries, null);
 		return gridDataMap;
 	}

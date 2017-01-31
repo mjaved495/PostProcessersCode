@@ -36,29 +36,19 @@ import com.opencsv.CSVReader;
 
 import edu.cornell.scholars.config.Configuration;
 import edu.cornell.scholars.keywordminer.Mesh;
+import edu.cornell.scholars.workflow1.MainEntryPoint_WorkFlow1;
 
 public class UniversityLevelKeywordCloudGenerator {
 
 	private static final Logger LOGGER = Logger.getLogger(UniversityLevelKeywordCloudGenerator.class.getName());
 
-	private final static String ARTICLE_2_PERSON_MAP = Configuration.QUERY_RESULTSET_FOLDER +"/"+ Configuration.date 
-			+ "/" + Configuration.ARTICLE_2_PERSON_MAP_FILENAME;
-
-	private final static String ALL_KW_FILENAME = Configuration.QUERY_RESULTSET_FOLDER +"/"+ Configuration.date +"/"+
-			Configuration.ALL_KEYWORDS_FILENAME;
-	private final static String ALL_MESHTERM_FILENAME = Configuration.QUERY_RESULTSET_FOLDER +"/"+ Configuration.date +"/"+
-			Configuration.ALL_MESHTERMS_FILENAME;
-
-	private final static String ARTICLE_2_KW_FILENAME = Configuration.QUERY_RESULTSET_FOLDER +"/"+ Configuration.date +"/"+
-			Configuration.ARTICLE_2_KEYWORDSET_MAP_FILENAME;
-	private final static String ARTICLE_2_MESH_FILENAME = Configuration.QUERY_RESULTSET_FOLDER +"/"+ Configuration.date +"/"+
-			Configuration.ARTICLE_2_MESHTERM_MAP_FILENAME;
-	private final static String ARTICLE_2_INFERRED_KEYWORDS_MAP = Configuration.QUERY_RESULTSET_FOLDER +"/"+ Configuration.date 
-			+ "/" + Configuration.ARTICLE_2_INFERREDKEYWORD_FILENAME;
-
-	private final static String UNIVERISTY_KEYWORD_CLOUD = Configuration.POSTPROCESS_RESULTSET_FOLDER +"/"+ Configuration.date +"/"+
-			Configuration.HOMEPAGE_KEYWORD_CLOUD_FOLDER + "/" + Configuration.HOMEPAGE_KEYWORD_CLOUD;
-
+	private static String ARTICLE_2_PERSON_MAP = null;
+	private static String ALL_KW_FILENAME = null;
+	private static String ALL_MESHTERM_FILENAME = null;
+	private static String ARTICLE_2_KW_FILENAME = null;
+	private static String ARTICLE_2_MESH_FILENAME = null;
+	private static String ARTICLE_2_INFERRED_KEYWORDS_MAP = null;
+	private static String UNIVERISTY_KEYWORD_CLOUD = null;
 
 	private Set<String> allkeywords = null;
 	private Set<Mesh> allMesh = null;
@@ -70,8 +60,10 @@ public class UniversityLevelKeywordCloudGenerator {
 	private Set<String> NFPersonArticles = null;
 
 	public static void main(String[] args) {
-		UniversityLevelKeywordCloudGenerator obj = new UniversityLevelKeywordCloudGenerator();
 		try {
+			MainEntryPoint_WorkFlow1.init("resources/setup.properties");
+			UniversityLevelKeywordCloudGenerator obj = new UniversityLevelKeywordCloudGenerator();
+			obj.setLocalDirectories();
 			obj.runProcess();
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -80,6 +72,26 @@ public class UniversityLevelKeywordCloudGenerator {
 		} catch (SAXException e) {
 			e.printStackTrace();
 		}	
+	}
+
+	private void setLocalDirectories() {
+		ARTICLE_2_PERSON_MAP = Configuration.QUERY_RESULTSET_FOLDER +"/"+ Configuration.date 
+				+ "/" + Configuration.ARTICLE_2_PERSON_MAP_FILENAME;
+
+		ALL_KW_FILENAME = Configuration.QUERY_RESULTSET_FOLDER +"/"+ Configuration.date +"/"+
+				Configuration.ALL_KEYWORDS_FILENAME;
+		ALL_MESHTERM_FILENAME = Configuration.QUERY_RESULTSET_FOLDER +"/"+ Configuration.date +"/"+
+				Configuration.ALL_MESHTERMS_FILENAME;
+
+		ARTICLE_2_KW_FILENAME = Configuration.QUERY_RESULTSET_FOLDER +"/"+ Configuration.date +"/"+
+				Configuration.ARTICLE_2_KEYWORDSET_MAP_FILENAME;
+		ARTICLE_2_MESH_FILENAME = Configuration.QUERY_RESULTSET_FOLDER +"/"+ Configuration.date +"/"+
+				Configuration.ARTICLE_2_MESHTERM_MAP_FILENAME;
+		ARTICLE_2_INFERRED_KEYWORDS_MAP = Configuration.QUERY_RESULTSET_FOLDER +"/"+ Configuration.date 
+				+ "/" + Configuration.ARTICLE_2_INFERREDKEYWORD_FILENAME;
+
+		UNIVERISTY_KEYWORD_CLOUD = Configuration.POSTPROCESS_RESULTSET_FOLDER +"/"+ Configuration.date +"/"+
+				Configuration.HOMEPAGE_KEYWORD_CLOUD_FOLDER + "/" + Configuration.HOMEPAGE_KEYWORD_CLOUD;
 	}
 
 	public void runProcess() throws IOException, ParserConfigurationException, SAXException {
@@ -102,7 +114,7 @@ public class UniversityLevelKeywordCloudGenerator {
 		groupedMap.putAll(keywordMap);
 		groupedMap.putAll(meshMap);
 
-		System.out.println(NFPersonArticles.size()); // not used right now.
+		//System.out.println(NFPersonArticles.size()); // not used right now.
 
 		computeWordCloudData(groupedMap);
 		
@@ -115,7 +127,7 @@ public class UniversityLevelKeywordCloudGenerator {
 		Set<String> keys = keywordMap.keySet();
 		for(String key: keys){
 			Keyword kw = keywordMap.get(key);
-			System.out.println("\""+key+"\",\""+kw.getCountByPerson()+"\"");
+			LOGGER.info("\""+key+"\",\""+kw.getCountByPerson()+"\"");
 		}
 	}
 
@@ -265,6 +277,7 @@ public class UniversityLevelKeywordCloudGenerator {
 				map.put(articleURI, p);
 			}
 		}
+		LOGGER.info("UNIV-LEVEL KEYWORD CLOUD: Article to Person Set Map size:"+ map.size());
 		return map;
 	}
 
@@ -299,7 +312,7 @@ public class UniversityLevelKeywordCloudGenerator {
 			}
 		}
 		br.close();
-		LOGGER.info("article to keywords-mesh line count:"+lineCount);
+		LOGGER.info("article to keywords/mesh line count:"+lineCount);
 		return map;
 	}
 

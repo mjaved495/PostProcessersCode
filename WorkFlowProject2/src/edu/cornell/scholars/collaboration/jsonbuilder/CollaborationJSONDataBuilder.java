@@ -31,9 +31,11 @@ import edu.cornell.scholars.config.Configuration;
 
 public class CollaborationJSONDataBuilder {
 
-	private static String COLLABORATIONS_CSV_FILE = Configuration.INT_COLLABORATIONS_FILE_CSV;
-	private static String ARTICLE_2_ID_MAP_FILE = Configuration.ARTICLE_2_WOS_PUBMED_ID_MAP_FILE_CSV;
-	private static String COLLABORATIONS_JSON_FILEPATH = Configuration.COLLABORATIONS_FILEPATH_JSON;
+	private static String COLLABORATIONS_CSV_FILE = Configuration.POSTPROCESS_RESULTSET_FOLDER   + "/" + Configuration.date + "/"
+			+Configuration.COLLABORATION_FOLDER+"/"+Configuration.COLLAB_INTERNAL_FOLDER+"/" + Configuration.INT_COLLABORATIONS_FILE_CSV;
+	private static String ARTICLE_2_ID_MAP_FILE = Configuration.QUERY_RESULTSET_FOLDER +"/"+Configuration.date+"/"+Configuration.ARTICLE_2_WOS_PUBMED_ID_MAP_FILE_CSV;
+	private static String COLLABORATIONS_JSON_FILEPATH = Configuration.POSTPROCESS_RESULTSET_FOLDER   + "/" + Configuration.date + "/"
+			+ Configuration.COLLABORATION_FOLDER+"/"+ Configuration.COLLAB_INTERNAL_FOLDER+"/";
 
 	private List<Collaboration> collaborations = null;
 	private Map<String, String> name_netId_map = null;

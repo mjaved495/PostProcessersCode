@@ -26,8 +26,11 @@ public class WosQueryResultsSetDataParser {
 	}
 
 	public void runProcess() {
-		articles_tsv = readWOSFiles(new File(Configuration.WOS_DATA_FOLDER));
-		saveData(articles_tsv, Configuration.WOS_DATA_FILE);
+		articles_tsv = readWOSFiles(new File(Configuration.QUERY_RESULTSET_FOLDER + "/"+ Configuration.date + "/"+ Configuration.WOS_DATA_FOLDER));
+		
+		String filePath = Configuration.QUERY_RESULTSET_FOLDER+"/"+Configuration.date+"/"
+				+Configuration.WOS_DATA_FOLDER+"/"+Configuration.WOS_DATA_FILENAME;
+		saveData(articles_tsv, filePath);
 	}
 
 
@@ -74,8 +77,12 @@ public class WosQueryResultsSetDataParser {
 						continue;
 					}
 					
-					//System.out.println(lineJustFetched);
 					wordsArray = lineJustFetched.split("\t");
+					
+//					if(lineJustFetched.contains("Droplet combustion characteristics of algae-derived renewable diesel")){
+//						System.out.println(lineJustFetched);
+//					}
+					
 					rows.add(wordsArray);
 				}
 			}
@@ -84,129 +91,28 @@ public class WosQueryResultsSetDataParser {
 			//System.out.println("row count:"+ rows.size());
 			for(; index<rows.size();index++){
 				String[] each = rows.get(index);
-
 				//printSingleEntry(each);
-
-				r = each[8]; // for error print only
-
+				String title = each[8]; // for error print only
 				String t = each[8];			// index 8: Title
-				char ar[] = t.trim().toCharArray();  // There are invisible null characters within the value and have to be removed.
-				String title = "";
-				for(char a: ar){
-					if((int)a != 0){
-						title+=a;
-					}
-				}
-
-				String j = each[9];		// index 9: Journal
-				char jr[] = j.trim().toCharArray();  // There are invisible null characters within the value and have to be removed.
-				String journal = "";
-				for(char a: jr){
-					if((int)a != 0){
-						journal+=a;
-					}
-				}
-
-				String l = each[12];	
-				char lang[] = l.trim().toCharArray();  // There are invisible null characters within the value and have to be removed.
-				String language = "";
-				for(char a: lang){
-					if((int)a != 0){
-						language+=a;
-					}
-				}
-
-				String tp = each[13];			// index 13: Type of work.
-				char ty[] = tp.trim().toCharArray();  // There are invisible null characters within the value and have to be removed.
-				String type = "";
-				for(char a: ty){
-					if((int)a != 0){
-						type+=a;
-					}
-				}
-
-				String kw = each[20];	
-				char kw_ar[] = kw.trim().toCharArray();  // There are invisible null characters within the value and have to be removed.
-				String keywords = "";
-				for(char a: kw_ar){
-					if((int)a != 0){
-						keywords+=a;
-					}
-				}
-
-				String isn = each[38];	
-				char isn_ar[] = isn.trim().toCharArray();  // There are invisible null characters within the value and have to be removed.
-				String issn = "";
-				for(char a: isn_ar){
-					if((int)a != 0){
-						issn+=a;
-					}
-				}
-
-				String eisn = each[39];
-				char eisn_ar[] = eisn.trim().toCharArray();  // There are invisible null characters within the value and have to be removed.
-				String eissn = "";
-				for(char a: eisn_ar){
-					if((int)a != 0){
-						eissn+=a;
-					}
-				}
-
-				String y = each[44];			// index 44: Year
-				char yr_ar[] = y.trim().toCharArray();  // There are invisible null characters within the value and have to be removed.
-				String year = "";
-				for(char a: yr_ar){
-					if((int)a != 0){
-						year+=a;
-					}
-				}
-
-				String d = each[54];
-				char doi_ar[] = d.trim().toCharArray();  // There are invisible null characters within the value and have to be removed.
-				String doi = "";
-				for(char a: doi_ar){
-					if((int)a != 0){
-						doi+=a;
-					}
-				}
-
-				String wosCat = each[57];
-				char cat_ar[] = wosCat.trim().toCharArray();  // There are invisible null characters within the value and have to be removed.
-				String wosCategory = "";
-				for(char a: cat_ar){
-					if((int)a != 0){
-						wosCategory+=a;
-					}
-				}
-
-				String rsa = each[58];
-				char rsa_ar[] = rsa.trim().toCharArray();  // There are invisible null characters within the value and have to be removed.
-				String researcharea = "";
-				for(char a: rsa_ar){
-					if((int)a != 0){
-						researcharea+=a;
-					}
-				}
-
-				String w = each[60];			// index 60: WOS
-				char wosar[] = w.trim().toCharArray();  // There are invisible null characters within the value and have to be removed.
-				String wos = "";
-				for(char a: wosar){
-					if((int)a != 0){
-						wos+=a;
-					}
-				}
+//				if(title.contains("Droplet combustion characteristics of algae-derived renewable diesel")){
+//					System.out.println(title);
+//				}
+				String journal = each[9];		// index 9: Journa	
+				String language =each[12];
+				String type = each[13];			// index 13: Type of work.
+				String keywords = each[20];
+				String issn = each[38];	
+				String eissn = each[39];
+				String year = each[44];			// index 44: Year
+				String doi = each[54];
+				String wosCategory = each[57];
+				String researcharea = each[58];
+				String wos = each[60];			// index 60: WOS
 				wosIds.add(wos.trim());
-
-				String pub = each[61];		// index 61: pubmed	
-				char pm[] = pub.trim().toCharArray();  // There are invisible null characters within the value and have to be removed.
-				String pubmed = "";
-				for(char p: pm){
-					if((int)p != 0){
-						pubmed+=p;
-					}
+				String pubmed = null;
+				if(each.length > 61){
+					pubmed = each[61];		// index 61: pubmed	
 				}
-				
 				data.addAll(generateArticleData(each, title, journal, language, type, keywords, issn, eissn, year, doi, wosCategory, researcharea, wos, pubmed));
 			}
 			buf.close();
