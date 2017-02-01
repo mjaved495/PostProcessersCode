@@ -99,7 +99,7 @@ public class KeywordMinerEntryPoint {
 	}
 
 	public void runProcess() throws IOException, ParserConfigurationException, SAXException {
-
+		setLocalDirectories();
 		article_rows = readArticleMapFile(new File(ARTICLE_FILENAME));
 		allkeywords = getLines(new File(ALL_KW_FILENAME));
 		allMesh = getMeshLines(new File(ALL_MESHTERM_FILENAME));
@@ -118,7 +118,7 @@ public class KeywordMinerEntryPoint {
 	private void saveDataInARDF(Map<String, ArticleEntriesData> articleDataMap, String filePath) throws FileNotFoundException {
 		String VIVOC_NS = "http://scholars.cornell.edu/ontology/vivoc.owl#";
 		Model rdfmodel = ModelFactory.createDefaultModel();	
-		Property inferredKeyword = rdfmodel.createProperty(VIVOC_NS+"inferredKeywords");
+		Property inferredKeyword = rdfmodel.createProperty(VIVOC_NS+"inferredKeyword");
 		Set<String> articleURIs = articleDataMap.keySet();
 
 		for(Iterator<String> i =  articleURIs.iterator(); i.hasNext();){

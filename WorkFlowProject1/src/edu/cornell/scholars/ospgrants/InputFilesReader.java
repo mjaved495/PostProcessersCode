@@ -33,20 +33,14 @@ public class InputFilesReader {
 	private static final Logger LOGGER = Logger.getLogger( InputFilesReader.class.getName() );
 
 	//input file names
-	public static String INPUT_AWRAD_FILENAME = Configuration.QUERY_RESULTSET_FOLDER + "/" + Configuration.date + "/"+
-			Configuration.OSP_AWARDS_FILENAME;
-	public static String INPUT_INVESTIGATOR_FILENAME = Configuration.QUERY_RESULTSET_FOLDER + "/" + Configuration.date + "/"+
-			Configuration.OSP_INV_FILENAME;		
-	public static String PERSON_NETID_DEPT_MAPPER_FILENAME = Configuration.QUERY_RESULTSET_FOLDER + "/" + Configuration.date + "/"+
-			Configuration.PERSON_2_DEPT_UNIT_MAP_FILENAME;
-	public static String DEPARTMENT_MAPPER_FILENAME = Configuration.QUERY_RESULTSET_FOLDER + "/" + Configuration.date + "/"+
-			Configuration.OSP_ADMNDEPT_FILENAME;
-	public static String ALL_GRANTS_FILE = Configuration.QUERY_RESULTSET_FOLDER + "/" + Configuration.date + "/"+
-			Configuration.ALL_GRANTS_FILENAME;
+	public static String INPUT_AWRAD_FILENAME = null;
+	public static String INPUT_INVESTIGATOR_FILENAME = null;		
+	public static String PERSON_NETID_DEPT_MAPPER_FILENAME = null;
+	public static String DEPARTMENT_MAPPER_FILENAME = null;
+	public static String ALL_GRANTS_FILE = null;
 
 	//output file names
-	public static String OUTPUT_TXT_FILE = Configuration.POSTPROCESS_RESULTSET_FOLDER + "/" + Configuration.date +"/"+ 
-			Configuration.GRANTS_FOLDER +"/"+ Configuration.OSP_GRANT_TXT;
+	public static String OUTPUT_TXT_FILE = null;
 
 	public Map<String, Award> awd_entries = null;
 	public Map<String, Investigator> inv_entries = null;
@@ -67,8 +61,25 @@ public class InputFilesReader {
 		}
 	}
 
-	public void runProcess() throws IOException, ParserConfigurationException, SAXException{
+	private void setLocalDirectories() {
+		INPUT_AWRAD_FILENAME = Configuration.QUERY_RESULTSET_FOLDER + "/" + Configuration.date + "/"+
+				Configuration.OSP_AWARDS_FILENAME;
+		INPUT_INVESTIGATOR_FILENAME = Configuration.QUERY_RESULTSET_FOLDER + "/" + Configuration.date + "/"+
+				Configuration.OSP_INV_FILENAME;		
+		PERSON_NETID_DEPT_MAPPER_FILENAME = Configuration.QUERY_RESULTSET_FOLDER + "/" + Configuration.date + "/"+
+				Configuration.PERSON_2_DEPT_UNIT_MAP_FILENAME;
+		DEPARTMENT_MAPPER_FILENAME = Configuration.QUERY_RESULTSET_FOLDER + "/" + Configuration.date + "/"+
+				Configuration.OSP_ADMNDEPT_FILENAME;
+		ALL_GRANTS_FILE = Configuration.QUERY_RESULTSET_FOLDER + "/" + Configuration.date + "/"+
+				Configuration.ALL_GRANTS_FILENAME;
 
+		//output file names
+		OUTPUT_TXT_FILE = Configuration.POSTPROCESS_RESULTSET_FOLDER + "/" + Configuration.date +"/"+ 
+				Configuration.GRANTS_FOLDER +"/"+ Configuration.OSP_GRANT_TXT;
+	}
+	
+	public void runProcess() throws IOException, ParserConfigurationException, SAXException{
+		setLocalDirectories();
 
 		existingGrants = readAllGrantsFile(ALL_GRANTS_FILE);
 

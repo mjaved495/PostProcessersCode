@@ -16,6 +16,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
 import edu.cornell.scholars.collaboration.gridreader.EditDistance;
@@ -24,7 +25,9 @@ import edu.cornell.scholars.collaboration.gridreader.GridModel;
 import edu.cornell.scholars.config.Configuration;
 
 public class WOSDataFileReaderGRIDMapper {
-
+	
+	private static final Logger LOGGER = Logger.getLogger(WOSDataFileReaderGRIDMapper.class.getName()); 
+			
 	//input files
 	private final static String WOS_DATA_FILE = Configuration.QUERY_RESULTSET_FOLDER+"/"+Configuration.date+"/"
 			+Configuration.WOS_DATA_FOLDER+"/"+Configuration.WOS_DATA_FILENAME;
@@ -78,7 +81,7 @@ public class WOSDataFileReaderGRIDMapper {
 	}
 
 	private void createAffiliationGRIDMap(Set<String> affiliationSet, List<String> countries, List<String> stateList) {
-		System.out.println("Affiliation: "+affiliationSet.size());
+		LOGGER.info("Affiliation: "+affiliationSet.size());
 		int count=0;  int countZero = 0; int countOne = 0; int countryNF=0; int gridNFC = 0;
 
 		Map<String, Set<String>> map = 
@@ -97,14 +100,14 @@ public class WOSDataFileReaderGRIDMapper {
 				country = "United States";
 			}
 			if(country == null){
-				System.err.println("Country not found: "+a);
+				LOGGER.warning("Country not found: "+a);
 				countryNF++;
 				affSet = grid;
 			}else{
 				country = replaceCountryName(country);
 				affSet = map.get(country.toUpperCase());
 				if(affSet == null){
-					System.err.println("Country not in GRID: "+country);
+					LOGGER.warning("Country not in GRID: "+country);
 					continue;
 				}
 			}
@@ -137,10 +140,10 @@ public class WOSDataFileReaderGRIDMapper {
 				gridNFC++;
 			}
 		}
-		System.out.println("COUNTRY NF: "+countryNF);
-		System.out.println("GRID NF: "+gridNFC);
-		System.out.println("countZero "+countZero);
-		System.out.println("countOne "+countOne);
+		LOGGER.info("COUNTRY NF: "+countryNF);
+		LOGGER.info("GRID NF: "+gridNFC);
+		LOGGER.info("countZero "+countZero);
+		LOGGER.info("countOne "+countOne);
 		//		for(String str: gridNFString){
 		//			if(str.toUpperCase().contains("UNIV")){
 		//				System.out.println(str);
@@ -149,9 +152,6 @@ public class WOSDataFileReaderGRIDMapper {
 	}
 
 	private String removeStopCharacters(String a1) {
-		if(a1.contains("Dalian Univ Technol")){
-			System.out.println(a1);
-		}
 		a1 = a1.replaceAll("-", ""); 
 		a1 = a1.replaceAll("'", ""); 
 		a1 = a1.replaceAll("L'", "");
@@ -246,7 +246,7 @@ public class WOSDataFileReaderGRIDMapper {
 		}catch(Exception e){
 			e.printStackTrace();
 		}
-		System.out.println(count+" lines read.");
+		LOGGER.info(count+" lines read.");
 		return articles;
 	}	
 
@@ -261,10 +261,10 @@ public class WOSDataFileReaderGRIDMapper {
 				list.add(line);
 			}
 		}catch (FileNotFoundException e) {
-			System.err.println(line);
+			LOGGER.severe(line);
 			e.printStackTrace();
 		} catch (IOException e) {
-			System.err.println(line);
+			LOGGER.severe(line);
 			e.printStackTrace();
 		} finally {
 			if (br != null) {

@@ -95,9 +95,9 @@ public class UniversityLevelKeywordCloudGenerator {
 	}
 
 	public void runProcess() throws IOException, ParserConfigurationException, SAXException {
-
-		NFPersonArticles = new HashSet<String>();
-
+		setLocalDirectories();
+		
+		NFPersonArticles = new HashSet<String>();	
 		article2person = readArticle2PersonMapFile(ARTICLE_2_PERSON_MAP);
 		allkeywords = getLines(new File(ALL_KW_FILENAME));
 		allMesh = getMeshLines(new File(ALL_MESHTERM_FILENAME));

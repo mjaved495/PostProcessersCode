@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Logger;
 
 import com.opencsv.CSVReader;
 
@@ -17,6 +18,8 @@ import edu.cornell.scholars.config.Configuration;
 
 public class GridFileReader {
 
+	private static final Logger LOGGER = Logger.getLogger(GridFileReader.class.getName()); 
+			
 	public static void main(String[] args) {
 		//<gridOrg, GRID>
 		Map<String, GridModel> gridMap = new HashMap<String, GridModel>();
@@ -59,18 +62,17 @@ public class GridFileReader {
 						lineCount++;
 					}catch (ArrayIndexOutOfBoundsException exp) {
 						for (String s : tokens) {
-							System.out.println("Exception: "+ lineCount+" :"+ s);
+							LOGGER.warning("Exception: "+ lineCount+" :"+ s);
 						}
-						System.out.println();
 						continue;
 					}
 				}
 			}
 		}catch (FileNotFoundException e) {
-			System.err.println(line);
+			LOGGER.severe(line);
 			e.printStackTrace();
 		} catch (IOException e) {
-			System.err.println(line);
+			LOGGER.severe(line);
 			e.printStackTrace();
 		} finally {
 			if (br != null) {
@@ -81,7 +83,7 @@ public class GridFileReader {
 				}
 			}
 		}
-		System.out.println("GRID line count:"+lineCount);
+		LOGGER.info("GRID line count:"+lineCount);
 		return map;
 	}
 }

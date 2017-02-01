@@ -16,6 +16,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Logger;
 
 import com.opencsv.CSVReader;
 
@@ -24,6 +25,7 @@ import edu.cornell.scholars.collaboration.gridreader.GridModel;
 import edu.cornell.scholars.config.Configuration;
 
 public class WOSTSVFileReader {
+	private static final Logger LOGGER = Logger.getLogger(WOSTSVFileReader.class.getName());
 	
 	private final static String WOSDATAFILE = Configuration.QUERY_RESULTSET_FOLDER+"/"+Configuration.date+"/"
 			+Configuration.WOS_DATA_FOLDER+"/"+Configuration.WOS_DATA_FILENAME;;
@@ -207,7 +209,7 @@ public class WOSTSVFileReader {
 		}catch(Exception e){
 			e.printStackTrace();
 		}
-		System.out.println(count+" lines read.");
+		LOGGER.info(count+" lines read.");
 		return articles;
 	}
 	
@@ -241,10 +243,10 @@ public class WOSTSVFileReader {
 				}	
 			}
 		}catch (FileNotFoundException e) {
-			System.err.println(line);
+			LOGGER.severe(line);
 			e.printStackTrace();
 		} catch (IOException e) {
-			System.err.println(line);
+			LOGGER.severe(line);
 			e.printStackTrace();
 		} finally {
 			if (br != null) {
@@ -255,7 +257,7 @@ public class WOSTSVFileReader {
 				}
 			}
 		}
-		System.out.println(count+" lines read from grid map file.");
+		LOGGER.info(count+" lines read from grid map file.");
 		return map;
 	}
 

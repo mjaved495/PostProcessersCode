@@ -16,6 +16,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Logger;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -33,7 +34,7 @@ import edu.cornell.scholars.config.Configuration;
 
 
 public class AffiliationDataAnalyzerExternal {
-
+	private static final Logger LOGGER = Logger.getLogger(AffiliationDataAnalyzerExternal.class.getName());
 	private final static String USA = "USA";
 	private final static String UNITED_STATES = "UNITED STATES";
 	private final static String WOS = "WOS";
@@ -139,7 +140,7 @@ public class AffiliationDataAnalyzerExternal {
 							country = UNITED_STATES;
 							state = usstate;
 						}else{
-							System.err.println("Country and US State not found: "+authorAff);
+							LOGGER.warning("Country and US State not found: "+authorAff);
 						}
 					}
 				}
@@ -160,11 +161,10 @@ public class AffiliationDataAnalyzerExternal {
 					author.setAuthorAffiliation(aa);
 				}
 			}catch(NullPointerException exp){
-				System.out.println(authorAff);
-				System.out.println(exp);
+				LOGGER.warning(authorAff);
+				LOGGER.info(exp.getMessage());
 			}
-
-
+			
 			author.setCountry(country);
 			author.setState(state);
 			author.setCornellAffiliation(cornellAff);
@@ -190,12 +190,12 @@ public class AffiliationDataAnalyzerExternal {
 				break;
 			}
 		}
-
+		
 		if(noCornellianAssociated){
+			//LOGGER.info("NO CORNELLIAN ASSOCIATED");
 			for(Article_TSV a: article){
-				System.out.println(a.getAuthor() +"-"+a.getAffiliation());
+				//LOGGER.info(a.getAuthor() +"-"+a.getAffiliation());
 			}
-			System.out.println();
 		}
 
 		return noCornellianAssociated;
@@ -231,7 +231,7 @@ public class AffiliationDataAnalyzerExternal {
 				}
 			}
 		}
-		System.err.println("USA State not found: "+entry);
+		LOGGER.warning("USA State not found: "+entry);
 		return null;
 	}
 
@@ -365,9 +365,9 @@ public class AffiliationDataAnalyzerExternal {
 			}
 		}
 		Set<String> keys = countryToArticleIdMap.keySet();
-		for(String key: keys){
-			System.out.println(key+" : "+countryToArticleIdMap.get(key).size());
-		}
+//		for(String key: keys){
+//			LOGGER.info(key+" : "+countryToArticleIdMap.get(key).size());
+//		}
 	}
 
 	private void createCSVfile(String filePath) {

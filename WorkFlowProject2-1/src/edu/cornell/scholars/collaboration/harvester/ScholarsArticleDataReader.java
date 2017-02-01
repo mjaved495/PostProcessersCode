@@ -105,7 +105,7 @@ public class ScholarsArticleDataReader {
 		pw = new PrintWriter(fw);
 		Set<String> keys = articleIds_new.keySet();
 		for(String key:keys){
-			pw.print("\n\""+key +"\",\""+articleIds_new.get(key)+"\"");  //id, source
+			pw.print("\n\""+key +"\",\""+articleIds_new.get(key)+"\",\""+Configuration.date+"\"");  //id, source
 			counter++;
 		}
 

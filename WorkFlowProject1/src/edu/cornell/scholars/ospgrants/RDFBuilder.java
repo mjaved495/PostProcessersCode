@@ -36,17 +36,14 @@ import edu.cornell.scholars.config.Configuration;
 public class RDFBuilder {
 
 	private static final Logger LOGGER = Logger.getLogger( RDFBuilder.class.getName() );
-	
-	
+
+
 	// input file names
-	public static String ORG_LIST_MASTER = Configuration.QUERY_RESULTSET_FOLDER + "/" + Configuration.date + "/"+
-			Configuration.ALL_ORGANIZATION_MAP_FILENAME;
-	public static String INPUT_TXT_FILE = Configuration.POSTPROCESS_RESULTSET_FOLDER + "/" + Configuration.date  +"/"+ 
-			Configuration.GRANTS_FOLDER +"/"+ Configuration.OSP_GRANT_TXT;
+	public static String ORG_LIST_MASTER = null;
+	public static String INPUT_TXT_FILE = null;
 
 	//output file names
-	public static String OUTPUT_NT_FILE = Configuration.POSTPROCESS_RESULTSET_FOLDER + "/" + Configuration.date  +"/"+ 
-			Configuration.GRANTS_FOLDER +"/"+ Configuration.OSP_GRANT_NT;
+	public static String OUTPUT_NT_FILE = null;
 
 	public static String SCHOLARS_IND = "http://scholars.cornell.edu/individual/";
 	public static String SCHOLARS_NS = "http://scholars.cornell.edu/ontology/vivoc.owl#";
@@ -70,7 +67,19 @@ public class RDFBuilder {
 	}
 
 
+	private void setLocalDirectories() {
+		ORG_LIST_MASTER = Configuration.QUERY_RESULTSET_FOLDER + "/" + Configuration.date + "/"+
+				Configuration.ALL_ORGANIZATION_MAP_FILENAME;
+		INPUT_TXT_FILE = Configuration.POSTPROCESS_RESULTSET_FOLDER + "/" + Configuration.date  +"/"+ 
+				Configuration.GRANTS_FOLDER +"/"+ Configuration.OSP_GRANT_TXT;
+
+		//output file names
+		OUTPUT_NT_FILE = Configuration.POSTPROCESS_RESULTSET_FOLDER + "/" + Configuration.date  +"/"+ 
+				Configuration.GRANTS_FOLDER +"/"+ Configuration.OSP_GRANT_NT;
+	}
+
 	public void runProcess() throws NoSuchAlgorithmException, IOException {
+		setLocalDirectories();
 		generateRDF(INPUT_TXT_FILE, OUTPUT_NT_FILE);
 	}
 
@@ -356,7 +365,7 @@ public class RDFBuilder {
 			data.add(obj);
 		}
 		buf.close();
-		
+
 		LOGGER.info("GRANTS: Grants TSV file size:"+ data.size());
 		return data;
 	}

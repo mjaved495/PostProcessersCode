@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Logger;
 
 import edu.cornell.scholars.collaboration.datamodel.data.AffiliationModel;
 import edu.cornell.scholars.collaboration.datamodel.data.CollaborationHead;
@@ -16,7 +17,8 @@ import edu.cornell.scholars.collaboration.datamodel.data.Unit;
 import edu.cornell.scholars.collaboration.gridmapper.Article_TSV;
 
 public class CollaborationDataAnalyzer {
-
+	private static final Logger LOGGER = Logger.getLogger(CollaborationDataAnalyzer.class.getName());
+	
 	private static List<WOSPerson_NetIdMap> wosperson_netid_maplist = null;
 	private static Map<String, AffiliationModel> affiliation_college_map = null;
 	private static Set<String> NF_Affiliation_Set = new HashSet<String>();
@@ -163,7 +165,7 @@ public class CollaborationDataAnalyzer {
 
 	private static void printIdentifiedCollaboration(CollaborationHead collaborationHead) {
 		Set<Unit> units = collaborationHead.getUnits();
-		System.out.println(collaborationHead.getWosId());
+		LOGGER.info(collaborationHead.getWosId());
 //		Set<String> distinctUnits = new HashSet<String>();
 		for(Unit u: units){
 //			if(!distinctUnits.contains(u.getUnitName())){
@@ -171,10 +173,9 @@ public class CollaborationDataAnalyzer {
 //				distinctUnits.add(u.getUnitName());
 //			}
 			for(Department d: u.getDepartments()){
-				System.out.println(u.getUnitName()+":"+d.getDeptName());
+				LOGGER.info(u.getUnitName()+":"+d.getDeptName());
 			}
 		}
-		System.out.print("\n\n");
 	}
 
 	private static void logAffiliationCounts(Set<String> collegeNameSet) {

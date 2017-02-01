@@ -10,13 +10,15 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import edu.cornell.scholars.config.Configuration;
 
 public class WosQueryResultsSetDataParser {
-	
+	private static final Logger LOGGER = Logger.getLogger(WosQueryResultsSetDataParser.class.getName());
+			
 	private List<Article_TSV> articles_tsv = new ArrayList<Article_TSV>();
 	private Set<String> wosIds = null;
 
@@ -48,8 +50,8 @@ public class WosQueryResultsSetDataParser {
 				data.addAll(readWOSFile(file));
 			}
 		}
-		System.out.println("Total WOS_ArticleTSV Size:"+ data.size());
-		System.out.println("Total WOS_ArticleTSV Size (Distinct WOSIDs): "+ wosIds.size());
+		LOGGER.info("Total WOS_ArticleTSV Size:"+ data.size());
+		LOGGER.info("Total WOS_ArticleTSV Size (Distinct WOSIDs): "+ wosIds.size());
 	
 		return data;
 	}
@@ -117,8 +119,8 @@ public class WosQueryResultsSetDataParser {
 			}
 			buf.close();
 		}catch(Exception e){
-			System.err.println(file.getName()+"-"+index);
-			System.err.println(r);
+			LOGGER.severe(file.getName()+"-"+index);
+			LOGGER.severe(r);
 			e.printStackTrace();
 		}
 		return data;

@@ -13,6 +13,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Logger;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -31,6 +32,8 @@ import edu.cornell.scholars.config.Configuration;
 
 public class CollaborationJSONDataBuilder {
 
+	private static final Logger LOGGER = Logger.getLogger(CollaborationJSONDataBuilder.class.getName());
+	
 	private static String COLLABORATIONS_CSV_FILE = Configuration.POSTPROCESS_RESULTSET_FOLDER   + "/" + Configuration.date + "/"
 			+Configuration.COLLABORATION_FOLDER+"/"+Configuration.COLLAB_INTERNAL_FOLDER+"/" + Configuration.INT_COLLABORATIONS_FILE_CSV;
 	private static String ARTICLE_2_ID_MAP_FILE = Configuration.QUERY_RESULTSET_FOLDER +"/"+Configuration.date+"/"+Configuration.ARTICLE_2_WOS_PUBMED_ID_MAP_FILE_CSV;
@@ -301,7 +304,7 @@ public class CollaborationJSONDataBuilder {
 				return iData.getArticleURI();
 			}
 		}
-		System.err.println("URI NOT FOUND FOR ID-: "+ wosId +"--"+pubmedId);
+		LOGGER.warning("URI NOT FOUND FOR ID-: "+ wosId +"--"+pubmedId);
 		return null;
 	}
 
@@ -426,8 +429,8 @@ public class CollaborationJSONDataBuilder {
 			}
 		}
 	
-		System.out.println("distinct wosIds:"+distinctWOSIds.size());
-		System.out.println("distinct wosIds map count:"+map.size());
+		LOGGER.info("distinct wosIds:"+distinctWOSIds.size());
+		LOGGER.info("distinct wosIds map count:"+map.size());
 		
 		return map;
 	}
@@ -459,10 +462,10 @@ public class CollaborationJSONDataBuilder {
 				}	
 			}
 		}catch (FileNotFoundException e) {
-			System.err.println(line);
+			LOGGER.severe(line);
 			e.printStackTrace();
 		} catch (IOException e) {
-			System.err.println(line);
+			LOGGER.severe(line);
 			e.printStackTrace();
 		} finally {
 			if (br != null) {

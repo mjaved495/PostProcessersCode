@@ -52,10 +52,10 @@ public class MainEntryPoint_WorkFlow2_2 {
 		obj.runProcess();
 		
 		//Step 4: Read the WOS_DATA_FILE file and process and save the Collaboration Wheel and Global Collaboration Process
-		System.out.println("\n\n---------- STARTING COLLABORATIN WHEEL AND GLOBAL COLLABORATION PROCESS----------");
+		LOGGER.info("---------- STARTING COLLABORATIN WHEEL AND GLOBAL COLLABORATION PROCESS----------");
 		runCollaborationProcess();
 		
-		System.out.println("\n\n---------- ALL PROCESSES COMPLETED----------");
+		LOGGER.info("---------- ALL PROCESSES COMPLETED----------");
 	}
 
 	private void runCollaborationProcess() {

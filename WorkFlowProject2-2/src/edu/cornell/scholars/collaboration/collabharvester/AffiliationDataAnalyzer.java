@@ -11,6 +11,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Logger;
 
 import com.opencsv.CSVReader;
 
@@ -26,6 +27,8 @@ import edu.cornell.scholars.config.Configuration;
 
 public class AffiliationDataAnalyzer {
 
+	private static final Logger LOGGER = Logger.getLogger(AffiliationDataAnalyzer.class.getName());
+			
 	private static String AFFILIATION_COLLEGE_MAP_FILE = Configuration.SUPPL_FOLDER +"/"+Configuration.AFFILIATION_STRING_TO_COLLEGE_MAP_FILE;
 	private static String ORGCODE_FILE = Configuration.SUPPL_FOLDER + "/"+ Configuration.ORG_ORGCODE_MAP_FILE;
 	
@@ -57,15 +60,10 @@ public class AffiliationDataAnalyzer {
 		analyzeData(wosId2articleMap);
 
 		
-		System.out.println("total count:"+ CollaborationDataAnalyzer.affiliationCount);
-		Set<String> k = CollaborationDataAnalyzer.aff_count_map.keySet();
-		for(String s: k){
-			System.out.println(s+","+CollaborationDataAnalyzer.aff_count_map.get(s));
-		}
-		
-		System.err.println("NON-MAPPED Affiliation Strings");
+		LOGGER.info("total count:"+ CollaborationDataAnalyzer.affiliationCount);
+		LOGGER.warning("NON-MAPPED Affiliation Strings");
 		for(String affiliation: NF_Affiliations){
-			System.err.println(affiliation);
+			LOGGER.info(affiliation);
 		}
 		
 	}
@@ -248,9 +246,8 @@ public class AffiliationDataAnalyzer {
 	private String getCode(String org) {
 		if(orgCodeMap.get(org) != null){
 			return orgCodeMap.get(org);
-		}else{
-			return "OTHERS";
 		}
+		return "";
 	}
 
 	public void saveInternalCollaborationsInJSON() {

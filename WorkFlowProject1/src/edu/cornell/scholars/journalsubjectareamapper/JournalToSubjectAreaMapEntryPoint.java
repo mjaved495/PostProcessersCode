@@ -80,7 +80,8 @@ public class JournalToSubjectAreaMapEntryPoint {
 	}
 
 	public void runProcess() throws IOException, NoSuchAlgorithmException, InterruptedException {
-
+		setLocalDirectories();
+		
 		// Read JOURNAL file 
 		readSCHLJournalCSVFile(new File(JOURNAL_INPUT_FILENAME));
 
