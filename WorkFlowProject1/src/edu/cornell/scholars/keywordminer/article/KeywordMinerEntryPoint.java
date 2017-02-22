@@ -1,4 +1,4 @@
-package edu.cornell.scholars.keywordminer;
+package edu.cornell.scholars.keywordminer.article;
 
 import java.io.BufferedReader;
 import java.io.File;

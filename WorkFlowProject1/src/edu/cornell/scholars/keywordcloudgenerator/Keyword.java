@@ -11,6 +11,7 @@ public class Keyword implements Comparable<Keyword>{
 	private Integer countOfPerson;
 	private String keyword;
 	private Set<String> types;
+	private Set<String> dates;
 
 	public Set<Person> getPersons() {
 		return persons;
@@ -76,6 +77,19 @@ public class Keyword implements Comparable<Keyword>{
 		this.types.add(type);
 	}
 
+	public Set<String> getDates() {
+		return dates;
+	}
+	public void setDates(Set<String> dates) {
+		this.dates = dates;
+	}
+	public void addDates(String date) {
+		if(this.dates == null){
+			this.dates = new HashSet<String>();
+		}
+		this.dates.add(date);
+	}
+	
 	public static class SortByPersonCount implements Comparator<Keyword>{ //inner class to sort by title
 		@Override
 		public int compare(Keyword kw1, Keyword kw2) {

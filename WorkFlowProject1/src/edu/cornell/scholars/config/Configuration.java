@@ -27,6 +27,7 @@ public static String date = null;
 	public static String JOURNAL_2_ISSN_EISSN_SUBJECTAREA_MAP_FILENAME = "Journal2IssnEissnSubjectAreaMap.psv";
 	public static String PERSON_2_DEPT_UNIT_MAP_FILENAME = "Person2DepartmentUnitMap.psv";
 	
+	public static String GRANT_2_TITLE_ABSTRACT_MAP_FILENAME = "Grant2TitleAbstractMap.xml";
 	public static String ALL_GRANTS_FILENAME = "AllGrants.csv";
 	public static String OSP_AWARDS_FILENAME = "Awards.xml";
 	public static String OSP_INV_FILENAME = "Investigators.xml";
@@ -71,6 +72,8 @@ public static String date = null;
 	public static String INF_KEYWORDS_CSV = "ArticleMapWithMinedKeywordsAndMeSH.csv";
 	public static String INF_KEYWORDS_NT =  "ArticleMapWithMinedKeywordsAndMeSH.nt";
 	
+	public static String GRANTS_INF_KEYWORDS_CSV = "GrantMapWithMinedKeywordsAndMeSH.csv";
+	public static String GRANTS_INF_KEYWORDS_NT =  "GrantMapWithMinedKeywordsAndMeSH.nt";
 	public static String OSP_GRANT_TXT = "AwdInv-all.txt";
 	public static String OSP_GRANT_NT = "AwdInv-all.nt";
 		

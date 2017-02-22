@@ -35,7 +35,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.opencsv.CSVReader;
 
 import edu.cornell.scholars.config.Configuration;
-import edu.cornell.scholars.keywordminer.Mesh;
+import edu.cornell.scholars.keywordminer.article.Mesh;
 import edu.cornell.scholars.workflow1.MainEntryPoint_WorkFlow1;
 
 public class UniversityLevelKeywordCloudGenerator {

@@ -1,4 +1,4 @@
-package edu.cornell.scholars.keywordminer;
+package edu.cornell.scholars.keywordminer.article;
 
 public class ArticleEntries {
 

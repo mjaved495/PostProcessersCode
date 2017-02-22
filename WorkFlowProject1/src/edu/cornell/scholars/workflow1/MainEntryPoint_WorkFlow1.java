@@ -16,7 +16,7 @@ import org.xml.sax.SAXException;
 import edu.cornell.scholars.config.Configuration;
 import edu.cornell.scholars.journalsubjectareamapper.JournalToSubjectAreaMapEntryPoint;
 import edu.cornell.scholars.keywordcloudgenerator.UniversityLevelKeywordCloudGenerator;
-import edu.cornell.scholars.keywordminer.KeywordMinerEntryPoint;
+import edu.cornell.scholars.keywordminer.article.KeywordMinerEntryPoint;
 import edu.cornell.scholars.ospgrants.OSPGrantsEntryPoint;
 
 public class MainEntryPoint_WorkFlow1 {

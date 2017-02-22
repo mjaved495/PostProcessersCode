@@ -1,27 +1,27 @@
-package edu.cornell.scholars.keywordminer.article;
+package edu.cornell.scholars.keywordminer.grants;
 
 import java.util.HashSet;
 import java.util.Set;
 
-public class ArticleEntriesData extends ArticleEntries{
+public class GrantEntriesData extends GrantEntries{
 
-	private Set<String> titlswords;
+	private Set<String> words;
 	private Set<String> meshTerms;
 	private Set<String> keywords;
 	private int minedKeywordCount;
 	
-	public Set<String> getTitlewords() {
-		return titlswords;
+	public Set<String> getWords() {
+		return words;
 	}
 
-	public void setTitlewords(Set<String> titlswords) {
-		this.titlswords = titlswords;
+	public void setWords(Set<String> words) {
+		this.words = words;
 	}
-	public void addTitlewords(String titlswords) {
-		if(this.titlswords == null){
-			this.titlswords = new HashSet<String>();
+	public void addWords(String word) {
+		if(this.words == null){
+			this.words = new HashSet<String>();
 		}
-		this.titlswords.add(titlswords);
+		this.words.add(word);
 	}
 
 	public Set<String> getMeshTerms() {
@@ -59,7 +59,7 @@ public class ArticleEntriesData extends ArticleEntries{
 
 	@Override
 	public String toString() {
-		return "\"" + getArticleURI() + "\",\"" + getArticleTitle().replaceAll("\"", "") + "\",\"" + minedKeywordCount + "\",\"" + meshTerms
+		return "\"" + getGrantURI() + "\",\"" + getGrantTitle().replaceAll("\"", "") + "\",\"" + minedKeywordCount + "\",\"" + meshTerms
 				+ "\",\"" + keywords + "\"";
 	}
 	

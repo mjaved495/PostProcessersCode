@@ -312,7 +312,6 @@ public class RDFBuilder {
 	private List<GrantModel> readFile(File file) throws IOException {
 		LOGGER.info("GRANTS: Reading Grants TSV file..."+ file.getAbsolutePath());
 		List<GrantModel> data = new ArrayList<GrantModel>();
-		String r = null;
 		FileInputStream is = new FileInputStream(file.getAbsolutePath());
 		InputStreamReader isr = new InputStreamReader(is, "UTF-8");
 		BufferedReader buf = new BufferedReader(isr);
