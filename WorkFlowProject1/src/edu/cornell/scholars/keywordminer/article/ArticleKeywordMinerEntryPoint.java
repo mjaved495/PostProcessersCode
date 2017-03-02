@@ -136,7 +136,7 @@ public class ArticleKeywordMinerEntryPoint {
 			pw.print("\n\""+ae.getArticleURI() +"\",\""+Configuration.date+"\"");  //id, source
 			counter++;
 		}
-
+		fw.close();
 		pw.close();
 		LOGGER.info("KW MINDER: updating the master article id file....completed");
 		LOGGER.info("KW MINDER: "+counter+" new rows added in "+ masterFile.getName());
