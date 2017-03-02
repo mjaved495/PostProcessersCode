@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringReader;
@@ -35,9 +36,9 @@ import com.opencsv.CSVReader;
 import edu.cornell.scholars.config.Configuration;
 import edu.cornell.scholars.workflow1.MainEntryPoint_WorkFlow1;
 
-public class KeywordMinerEntryPoint {
+public class ArticleKeywordMinerEntryPoint {
 
-	private static final Logger LOGGER = Logger.getLogger(KeywordMinerEntryPoint.class.getName());
+	private static final Logger LOGGER = Logger.getLogger(ArticleKeywordMinerEntryPoint.class.getName());
 
 	//input file names
 	private static String ARTICLE_FILENAME = null;
@@ -45,6 +46,7 @@ public class KeywordMinerEntryPoint {
 	private static String ALL_MESHTERM_FILENAME = null;
 	private static String ARTICLE_2_KW_FILENAME = null;
 	private static String ARTICLE_2_MESH_FILENAME = null;
+	private static String KWMINER_ARTICLEID_MASTER_FILENAME = null;
 
 	//output file names
 	private static String ARTICLE_MAP_CSVDATA_FILEPATH = null;
@@ -59,14 +61,13 @@ public class KeywordMinerEntryPoint {
 	private List<ArticleEntries> article_rows = null;
 	private Set<String> matchWords = new HashSet<String>();
 
-	private Map<String, String> meshMap = new HashMap<String, String>();
 	private Map<String, Set<String>> articleMeshMap = new HashMap<String, Set<String>>();
 	private Map<String, Set<String>> articleKWMap = new HashMap<String, Set<String>>();
 
 	public static void main(String[] args) {
 		try {
 			MainEntryPoint_WorkFlow1.init("resources/setup.properties");
-			KeywordMinerEntryPoint obj = new KeywordMinerEntryPoint();
+			ArticleKeywordMinerEntryPoint obj = new ArticleKeywordMinerEntryPoint();
 			obj.setLocalDirectories();
 			obj.runProcess();
 		} catch (IOException e) {
@@ -89,30 +90,84 @@ public class KeywordMinerEntryPoint {
 				Configuration.ARTICLE_2_KEYWORDSET_MAP_FILENAME;
 		ARTICLE_2_MESH_FILENAME = Configuration.QUERY_RESULTSET_FOLDER +"/"+ Configuration.date +"/"+
 				Configuration.ARTICLE_2_MESHTERM_MAP_FILENAME;
+		KWMINER_ARTICLEID_MASTER_FILENAME = Configuration.SUPPL_FOLDER +"/"+ 
+				Configuration.ARTICLEID_MASTER_KEYWORDMINER_FILENAME;		
 
 		//output file names
 		ARTICLE_MAP_CSVDATA_FILEPATH = Configuration.POSTPROCESS_RESULTSET_FOLDER +"/"+ Configuration.date 
 				+"/"+ Configuration.INFERRED_KEYWORDS_FOLDER +"/"+ Configuration.INF_KEYWORDS_CSV;
 		ARTICLE_MAP_NTDATA_FILEPATH =  Configuration.POSTPROCESS_RESULTSET_FOLDER +"/"+ Configuration.date 
 				+"/"+ Configuration.INFERRED_KEYWORDS_FOLDER +"/"+ Configuration.INF_KEYWORDS_NT;
-		
+
 	}
 
 	public void runProcess() throws IOException, ParserConfigurationException, SAXException {
 		setLocalDirectories();
 		article_rows = readArticleMapFile(new File(ARTICLE_FILENAME));
+		Set<String> articleURIs = readMasterArticleFile(new File(KWMINER_ARTICLEID_MASTER_FILENAME));
+		List<ArticleEntries> newArticles_rows = filterNewArticles(article_rows, articleURIs);
+		if(newArticles_rows.size() == 0){
+			LOGGER.info(newArticles_rows.size()+" new articles found.....returning.");
+			return;
+		}
 		allkeywords = getLines(new File(ALL_KW_FILENAME));
 		allMesh = getMeshLines(new File(ALL_MESHTERM_FILENAME));
 		articleKWMap   = getArticleKeywordMeSHMap(new File(ARTICLE_2_KW_FILENAME));
 		articleMeshMap = getArticleKeywordMeSHMap(new File(ARTICLE_2_MESH_FILENAME));
 
-		Map<String, ArticleEntriesData> articleDataMap =  createArticleMapOfEntries(article_rows);
+		Map<String, ArticleEntriesData> articleDataMap =  createArticleMapOfEntries(newArticles_rows);
 		LOGGER.info(articleDataMap.size()+" rows of article data map.");
 
 		compareAndProcess(articleDataMap);
 		saveArticleMapDataInAFile(articleDataMap, ARTICLE_MAP_CSVDATA_FILEPATH);
 		saveDataInARDF(articleDataMap, ARTICLE_MAP_NTDATA_FILEPATH);
 
+		updateMasterFile(newArticles_rows, new File(KWMINER_ARTICLEID_MASTER_FILENAME));
+	}
+
+	private void updateMasterFile(List<ArticleEntries> newArticles_rows, File masterFile) throws IOException {
+		// Update the MASTER KW MINDER FILE.
+		LOGGER.info("KW MINDER: updating the master article id file....");
+		int counter=0;
+		PrintWriter pw = null;
+		FileWriter fw = new FileWriter(masterFile, true);
+		pw = new PrintWriter(fw);
+		for(ArticleEntries ae:newArticles_rows){
+			pw.print("\n\""+ae.getArticleURI() +"\",\""+Configuration.date+"\"");  //id, source
+			counter++;
+		}
+
+		pw.close();
+		LOGGER.info("KW MINDER: updating the master article id file....completed");
+		LOGGER.info("KW MINDER: "+counter+" new rows added in "+ masterFile.getName());
+	}
+
+	private List<ArticleEntries> filterNewArticles(List<ArticleEntries> article_rows2, Set<String> articleURIs) {
+		List<ArticleEntries>  newArticles = new ArrayList<ArticleEntries>();
+		for(ArticleEntries ae: article_rows2){
+			String uri = ae.getArticleURI();
+			if(!articleURIs.contains(uri)){
+				newArticles.add(ae);
+			}
+		}
+		LOGGER.info("KW MINDER: New KW Miner Article size:"+ newArticles.size());
+		return newArticles;
+	}
+
+	private Set<String> readMasterArticleFile(File file) throws IOException {
+		LOGGER.info("KW MINDER: reading master KW Article file....");
+		Set<String> set = new HashSet<String>();
+		CSVReader reader;
+		reader = new CSVReader(new FileReader(file),',','\"');
+		String [] nextLine;	
+		while ((nextLine = reader.readNext()) != null) {
+			if(nextLine[0].isEmpty()) continue;
+			set.add(nextLine[0]);
+		}
+		reader.close();
+		LOGGER.info("KW MINDER: reading master kw miner article file....completed");
+		LOGGER.info("KW MINDER: master kw miner article size:"+ set.size());
+		return set;
 	}
 
 	private void saveDataInARDF(Map<String, ArticleEntriesData> articleDataMap, String filePath) throws FileNotFoundException {

@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringReader;
@@ -35,6 +36,7 @@ public class JournalToSubjectAreaMapEntryPoint {
 
 	//input file names
 	private static String JOURNAL_INPUT_FILENAME = null;	
+	private static String JOURNALID_MASTER_FILENAME = null;
 	private static String subjectAreaFile = null;
 	private static String WOS_DataFile = null;		
 	private static String FOR_DataFile = null;	
@@ -68,6 +70,7 @@ public class JournalToSubjectAreaMapEntryPoint {
 	private void setLocalDirectories() {
 		JOURNAL_INPUT_FILENAME = Configuration.QUERY_RESULTSET_FOLDER +"/"+ Configuration.date +"/"+
 				Configuration.JOURNAL_2_ISSN_EISSN_SUBJECTAREA_MAP_FILENAME;	
+		JOURNALID_MASTER_FILENAME = Configuration.SUPPL_FOLDER +"/"+ Configuration.JOURNAL_MASTER_FILENAME;
 		subjectAreaFile = Configuration.QUERY_RESULTSET_FOLDER +"/"+ Configuration.date +"/"+
 				Configuration.ALL_SUBJECTAREAS_FILENAME;
 		WOS_DataFile = Configuration.SUPPL_FOLDER +"/"+ Configuration.WOS_JOURNAL_CLSFCN_FILENAME;		
@@ -81,10 +84,16 @@ public class JournalToSubjectAreaMapEntryPoint {
 
 	public void runProcess() throws IOException, NoSuchAlgorithmException, InterruptedException {
 		setLocalDirectories();
-		
-		// Read JOURNAL file 
-		readSCHLJournalCSVFile(new File(JOURNAL_INPUT_FILENAME));
 
+		Set<String> journalURIs = readMasterJournalFile(new File(JOURNALID_MASTER_FILENAME));
+
+		// Read JOURNAL file 
+		Set<String> newJournalURIs = readAndFilterSCHLJournalCSVFile(new File(JOURNAL_INPUT_FILENAME), journalURIs);
+		if(newJournalURIs.size() == 0) {
+			LOGGER.info("JOURNAL: 0 new journals found....returning");
+			return;
+		}
+		
 		// Read WOS file
 		readWOSJournalCSVFile(new File(WOS_DataFile));
 
@@ -100,7 +109,41 @@ public class JournalToSubjectAreaMapEntryPoint {
 		if(merged_data.size() > 0){
 			saveJournalsCSV(merged_data, Journal2SubjectAreaDataFile);
 			saveJournalsRDF(merged_data, Journal2SubjectAreaRDFFile);
+			updateMasterFile(newJournalURIs, new File(JOURNALID_MASTER_FILENAME));
 		}
+	}
+
+	private void updateMasterFile(Set<String> newJournalURIs, File masterFile) throws IOException {
+		// Update the MASTER JOURNAL FILE.
+		LOGGER.info("COLLAB1: updating the master journal id file....");
+		int counter=0;
+		PrintWriter pw = null;
+		FileWriter fw = new FileWriter(masterFile, true);
+		pw = new PrintWriter(fw);
+		for(String uri:newJournalURIs){
+			pw.print("\n\""+uri +"\",\""+Configuration.date+"\"");  //id, source
+			counter++;
+		}
+
+		pw.close();
+		LOGGER.info("JOURNAL: updating the master journal id file....completed");
+		LOGGER.info("JOURNAL: "+counter+" new rows added in "+ masterFile.getName());
+	}
+
+	private Set<String> readMasterJournalFile(File file) throws IOException {
+		LOGGER.info("COLLAB1: reading master journal file....");
+		Set<String> set = new HashSet<String>();
+		CSVReader reader;
+		reader = new CSVReader(new FileReader(file),',','\"');
+		String [] nextLine;	
+		while ((nextLine = reader.readNext()) != null) {
+			if(nextLine[0].isEmpty()) continue;
+			set.add(nextLine[0]);
+		}
+		reader.close();
+		LOGGER.info("JOURNAL: reading master journal file....completed");
+		LOGGER.info("JOURNAL: master journal size:"+ set.size());
+		return set;
 	}
 
 	/**
@@ -165,8 +208,9 @@ public class JournalToSubjectAreaMapEntryPoint {
 		return data;
 	}
 
-	private void readSCHLJournalCSVFile(File file) throws IOException {
+	private Set<String> readAndFilterSCHLJournalCSVFile(File file, Set<String> journalURI) throws IOException {
 		LOGGER.info("JRNL2SA: Reading Scholars Journals data....");
+		Set<String> newIds = new HashSet<String>();
 		BufferedReader br = null;
 		String line = "";
 		long lineCount = 0;
@@ -179,6 +223,8 @@ public class JournalToSubjectAreaMapEntryPoint {
 			while ((tokens = reader.readNext()) != null) {
 				try {
 					String uri = tokens[0];
+					if(journalURI.contains(uri)) continue;
+					newIds.add(uri);
 					Journal new_obj = new Journal();
 					new_obj.setUri(uri);
 					new_obj.setTitle(tokens[1]);
@@ -198,6 +244,7 @@ public class JournalToSubjectAreaMapEntryPoint {
 		}
 		br.close();
 		LOGGER.info("JRNL2SA: scholars journal count "+ schlrs_journals_map.size());
+		return newIds;
 	}
 
 	private void readWOSJournalCSVFile(File file) throws IOException {

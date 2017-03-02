@@ -3,6 +3,7 @@ package edu.cornell.scholars.keywordminer.grants;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -31,6 +32,7 @@ import org.xml.sax.SAXException;
 import com.opencsv.CSVReader;
 
 import edu.cornell.scholars.config.Configuration;
+import edu.cornell.scholars.keywordminer.article.ArticleEntries;
 import edu.cornell.scholars.keywordminer.article.Mesh;
 import edu.cornell.scholars.workflow1.MainEntryPoint_WorkFlow1;
 
@@ -42,6 +44,7 @@ public class GrantKeywordMinerEntryPoint {
 	private static String GRANT_FILENAME = null;
 	private static String ALL_KW_FILENAME = null;
 	private static String ALL_MESHTERM_FILENAME = null;
+	private static String KWMINER_GRANTID_MASTER_FILENAME = null;
 	
 	//output file names
 	private static String GRANT_MAP_CSVDATA_FILEPATH = null;
@@ -63,7 +66,6 @@ public class GrantKeywordMinerEntryPoint {
 		try {
 			MainEntryPoint_WorkFlow1.init("resources/setup.properties");
 			GrantKeywordMinerEntryPoint obj = new GrantKeywordMinerEntryPoint();
-			obj.setLocalDirectories();
 			obj.runProcess();
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -81,7 +83,8 @@ public class GrantKeywordMinerEntryPoint {
 				Configuration.ALL_KEYWORDS_FILENAME;
 		ALL_MESHTERM_FILENAME = Configuration.QUERY_RESULTSET_FOLDER +"/"+ Configuration.date +"/"+
 				Configuration.ALL_MESHTERMS_FILENAME;
-
+		KWMINER_GRANTID_MASTER_FILENAME = Configuration.SUPPL_FOLDER +"/"+ 
+				Configuration.GRANTID_MASTER_KEYWORDMINER_FILENAME;	
 		//output file names
 		GRANT_MAP_CSVDATA_FILEPATH = Configuration.POSTPROCESS_RESULTSET_FOLDER +"/"+ Configuration.date 
 				+"/"+ Configuration.INFERRED_KEYWORDS_FOLDER +"/"+ Configuration.GRANTS_INF_KEYWORDS_CSV;
@@ -93,6 +96,13 @@ public class GrantKeywordMinerEntryPoint {
 	public void runProcess() throws IOException, ParserConfigurationException, SAXException {
 		setLocalDirectories();
 		grant_rows = readGrantMapFile(new File(GRANT_FILENAME));
+		Set<String> grantURIs = readMasterGrantFile(new File(KWMINER_GRANTID_MASTER_FILENAME));
+		List<GrantEntries> newGrant_rows = filterNewGrants(grant_rows, grantURIs);
+		if(newGrant_rows.size() == 0){
+			LOGGER.info(newGrant_rows.size()+" new grants found.....returning.");
+			return;
+		}
+		
 		allkeywords = getLines(new File(ALL_KW_FILENAME));
 		allMesh = getMeshLines(new File(ALL_MESHTERM_FILENAME));
 		
@@ -102,7 +112,53 @@ public class GrantKeywordMinerEntryPoint {
 		compareAndProcess(grantDataMap);
 		saveGrantMapDataInAFile(grantDataMap, GRANT_MAP_CSVDATA_FILEPATH);
 		saveDataInARDF(grantDataMap, GRANT_MAP_NTDATA_FILEPATH);
+		
+		updateMasterFile(newGrant_rows, new File(KWMINER_GRANTID_MASTER_FILENAME));
+	}
+	
+	private void updateMasterFile(List<GrantEntries> newGrant_rows, File masterFile) throws IOException {
+		// Update the MASTER KW MINDER FILE.
+		LOGGER.info("KW MINDER: updating the master article id file....");
+		int counter=0;
+		PrintWriter pw = null;
+		FileWriter fw = new FileWriter(masterFile, true);
+		pw = new PrintWriter(fw);
+		for(GrantEntries ge:newGrant_rows){
+			pw.print("\n\""+ge.getGrantURI() +"\",\""+Configuration.date+"\"");  //id, source
+			counter++;
+		}
 
+		pw.close();
+		LOGGER.info("KW MINDER: updating the master grant id file....completed");
+		LOGGER.info("KW MINDER: "+counter+" new rows added in "+ masterFile.getName());
+	}
+	
+	private List<GrantEntries> filterNewGrants(List<GrantEntries> grant_rows2, Set<String> grantURIs) {
+		List<GrantEntries>  newGrants = new ArrayList<GrantEntries>();
+		for(GrantEntries ge: grant_rows2){
+			String uri = ge.getGrantURI();
+			if(!grantURIs.contains(uri)){
+				newGrants.add(ge);
+			}
+		}
+		LOGGER.info("KW MINDER: New KW Miner Article size:"+ newGrants.size());
+		return newGrants;
+	}
+
+	private Set<String> readMasterGrantFile(File file) throws IOException {
+		LOGGER.info("KW MINDER: reading master KW Grant file....");
+		Set<String> set = new HashSet<String>();
+		CSVReader reader;
+		reader = new CSVReader(new FileReader(file),',','\"');
+		String [] nextLine;	
+		while ((nextLine = reader.readNext()) != null) {
+			if(nextLine[0].isEmpty()) continue;
+			set.add(nextLine[0]);
+		}
+		reader.close();
+		LOGGER.info("KW MINDER: reading master kw miner grant file....completed");
+		LOGGER.info("KW MINDER: master kw miner grant size:"+ set.size());
+		return set;
 	}
 
 	private void saveDataInARDF(Map<String, GrantEntriesData> grantDataMap, String filePath) throws FileNotFoundException {

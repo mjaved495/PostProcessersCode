@@ -8,14 +8,17 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.xml.sax.SAXException;
 
+import edu.cornell.scholars.workflow1.MainEntryPoint_WorkFlow1;
+
 public class OSPGrantsEntryPoint {
 
 
 	private static final Logger LOGGER = Logger.getLogger( OSPGrantsEntryPoint.class.getName() );
 	
 	public static void main(String[] args) {
-		OSPGrantsEntryPoint osp = new OSPGrantsEntryPoint();
 		try {
+			MainEntryPoint_WorkFlow1.init("resources/setup.properties"); 
+			OSPGrantsEntryPoint osp = new OSPGrantsEntryPoint();
 			osp.runProcess();
 		} catch (IOException | ParserConfigurationException | SAXException e) {
 			e.printStackTrace();

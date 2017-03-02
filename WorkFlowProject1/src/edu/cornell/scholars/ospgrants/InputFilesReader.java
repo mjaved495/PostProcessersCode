@@ -26,6 +26,7 @@ import org.xml.sax.SAXException;
 import com.opencsv.CSVReader;
 
 import edu.cornell.scholars.config.Configuration;
+import edu.cornell.scholars.workflow1.MainEntryPoint_WorkFlow1;
 
 
 public class InputFilesReader {
@@ -49,8 +50,9 @@ public class InputFilesReader {
 	private Map<String, Grant> existingGrants = null;
 
 	public static void main(String[] args) {
-		InputFilesReader reader = new InputFilesReader();
 		try {
+			MainEntryPoint_WorkFlow1.init("resources/setup.properties"); 
+			InputFilesReader reader = new InputFilesReader();
 			reader.runProcess();
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -77,16 +79,21 @@ public class InputFilesReader {
 		OUTPUT_TXT_FILE = Configuration.POSTPROCESS_RESULTSET_FOLDER + "/" + Configuration.date +"/"+ 
 				Configuration.GRANTS_FOLDER +"/"+ Configuration.OSP_GRANT_TXT;
 	}
-	
+
 	public void runProcess() throws IOException, ParserConfigurationException, SAXException{
 		setLocalDirectories();
 
-		existingGrants = readAllGrantsFile(ALL_GRANTS_FILE);
+		existingGrants = readAllGrantsFile(ALL_GRANTS_FILE);  // All grants that exists in the triple store
 
 		AwardsDataReader obj1 = new AwardsDataReader();
-		awd_entries = obj1.loadAwardData(new File(INPUT_AWRAD_FILENAME));
+		awd_entries = obj1.loadAwardData(new File(INPUT_AWRAD_FILENAME));  // Grants file that retrieved from OSP
 
 		awd_entries = getNewAwardsOnly(awd_entries, existingGrants);
+
+		if(awd_entries.size() == 0){
+			LOGGER.info(awd_entries.size() + "new grants found......returning");
+			return;
+		}
 
 		//saveDistinctSponsors(awd_entries, "resources/output/AwdDistinctSponsorNames.csv");		
 		//saveSponsorsFlow(awd_entries, "resources/output/AwdSponsors.csv");
@@ -260,7 +267,7 @@ public class InputFilesReader {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		LOGGER.info("GRANTS: Person to NetId/Dept Map size"+ list.size()); 
+		LOGGER.info("GRANTS: Person to NetId/Dept Map size "+ list.size()); 
 		return list;
 	}
 
@@ -277,7 +284,7 @@ public class InputFilesReader {
 			Grant g = new Grant(id, uri, typeURI);
 			grants.put(id, g);
 		}
-		LOGGER.info("GRANTS: Existing grants in Scholars"+ grants.size()); 
+		LOGGER.info("GRANTS: Existing grants in Scholars "+ grants.size()); 
 		return grants;
 	}
 

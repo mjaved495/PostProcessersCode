@@ -16,6 +16,7 @@ public static String date = null;
 	public static String INFERRED_KEYWORDS_FOLDER = "inferredkeywords";
 	public static String SUBJECTAREA_FOLDER = "subjectarea";
 	public static String WOS_DATA_FOLDER = "wosdata";
+	public static String COLLAB_WHEEL_DATA_FOLDER = "collabwheel";
 	
 	public static String ALL_KEYWORDS_FILENAME = "AllFreeTextKeywords.psv";
 	public static String ALL_MESHTERMS_FILENAME = "AllMeshTerms.xml";
@@ -27,6 +28,11 @@ public static String date = null;
 	public static String JOURNAL_2_ISSN_EISSN_SUBJECTAREA_MAP_FILENAME = "Journal2IssnEissnSubjectAreaMap.psv";
 	public static String PERSON_2_DEPT_UNIT_MAP_FILENAME = "Person2DepartmentUnitMap.psv";
 	
+	public static String JOURNAL_MASTER_FILENAME = 		"MASTER_JOURNALID.csv";
+	public static String ARTICLEID_MASTER_FILENAME = 	"MASTER_ARTICLEID.csv";
+	public static String ARTICLEID_MASTER_KEYWORDMINER_FILENAME = 	"MASTER_KeywordMiner_ARTICLEID.csv";
+	public static String GRANTID_MASTER_KEYWORDMINER_FILENAME = 	"MASTER_KeywordMiner_GRANTID.csv";
+	
 	public static String GRANT_2_TITLE_ABSTRACT_MAP_FILENAME = "Grant2TitleAbstractMap.xml";
 	public static String ALL_GRANTS_FILENAME = "AllGrants.csv";
 	public static String OSP_AWARDS_FILENAME = "Awards.xml";
@@ -37,7 +43,7 @@ public static String date = null;
 	public static String WOS_JOURNAL_CLSFCN_FILENAME ="wosJournalClassification.csv";
 	
 	public static String PERSON_2_ARTICLE_MAP_FILENAME = "Person2ArticleArticleIdMap.csv";
-	public static String ARTICLEID_MASTER_FILENAME = "ARTICLEID_MASTER.csv";
+	
 	public static String WOS_QUERY_FILENAME = "WOSQueryLineFile.txt";
 	public static String WOS_DATA_FILENAME = "WOSDataFile.csv";
 	
@@ -61,10 +67,19 @@ public static String date = null;
 	public static String EXT_COLLABORATIONS_FILE_JSON = "ExternalCollaborations.json";
 	public static String EXT_COLLABORATIONS_COUNT_CSV = "ExternalCollaborationsCount.csv";
 	public static String NOTFOUND_AFFILIATION_SET_FILE = "notFoundAffiliationList.csv";
+	public static String INTERDEPT_EN_COLLAB_QUERY_RESULT_FILENAME_CSV = "interdept-en.csv";
+	public static String INTERDEPT_EN_COLLAB_QUERY_RESULT_FILENAME_JSON = "fake_collab_data_interdept_viz.json";
+	public static String CROSSUNIT_EN_COLLAB_QUERY_RESULT_FILENAME_CSV = "crossunit-en.csv";
+	public static String CROSSUNIT_EN_COLLAB_QUERY_RESULT_FILENAME_JSON = "fake_collab_data_intercollege_viz.json";
+	
 	
 	public static String ARTICLE_2_INFERREDKEYWORD_FILENAME = "Article2InferredKeywordSetMap.psv";
 	public static String ARTICLE_2_PERSON_MAP_FILENAME = "Article2PersonMap.csv";
 	public static String HOMEPAGE_KEYWORD_CLOUD = "HomepageKWCloud.json";
+	
+	public static String ARTICLE_2_PERSON_MAP_ENG_FILENAME = "Article2PersonMapENG.csv";
+	public static String ARTICLE_2_KEYWORDSET_MAP_ENG_FILENAME = "Article2KeywordSetMapENG.csv";
+	public static String ENG_KEYWORD_CLOUD = "ENGKWCloud.json";
 	
 	public static String JOURNAL_2_SUBJECTAREA_CSV = "Journal2SubjectArea.csv";
 	public static String JOURNAL_2_SUBJECTAREA_NT = "Journal2SubjectArea.nt";

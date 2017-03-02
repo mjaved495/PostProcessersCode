@@ -13,10 +13,12 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.xml.sax.SAXException;
 
+import edu.cornell.scholars.collaborationwheel.CollabVizDataGenerator;
 import edu.cornell.scholars.config.Configuration;
 import edu.cornell.scholars.journalsubjectareamapper.JournalToSubjectAreaMapEntryPoint;
 import edu.cornell.scholars.keywordcloudgenerator.UniversityLevelKeywordCloudGenerator;
-import edu.cornell.scholars.keywordminer.article.KeywordMinerEntryPoint;
+import edu.cornell.scholars.keywordminer.article.ArticleKeywordMinerEntryPoint;
+import edu.cornell.scholars.keywordminer.grants.GrantKeywordMinerEntryPoint;
 import edu.cornell.scholars.ospgrants.OSPGrantsEntryPoint;
 
 public class MainEntryPoint_WorkFlow1 {
@@ -79,14 +81,46 @@ public class MainEntryPoint_WorkFlow1 {
 			LOGGER.log(Level.WARNING, "\n\n---------ERROR OCCURED:----------", exp);
 		}
 
+		//Run the collaboration data process
+		LOGGER.info("\n\n---------- STARTING COLLABORATION DATA PROCESS----------");
+		try{
+			runCollaborationDataProcess();
+		}catch(Exception exp){
+			LOGGER.log(Level.WARNING, "\n\n---------ERROR OCCURED:----------", exp);
+		}
+
+		//Run the collaboration data process
+		LOGGER.info("\n\n---------- STARTING GRANTS INFERRED KEYWORDS DATA PROCESS----------");
+		try{
+			runGrantInferredKeywordsProcess();
+		}catch(Exception exp){
+			LOGGER.log(Level.WARNING, "\n\n---------ERROR OCCURED:----------", exp);
+		}
+
+
 		LOGGER.info("\n\n---------- ALL PROCESSES COMPLETED----------");
 	}
 
-	
-	
-	
-	
-	
+	/**
+	 * 
+	 * @throws IOException
+	 * @throws ParserConfigurationException
+	 * @throws SAXException
+	 */
+	private void runGrantInferredKeywordsProcess() throws IOException, ParserConfigurationException, SAXException {
+		GrantKeywordMinerEntryPoint obj = new GrantKeywordMinerEntryPoint();
+		obj.runProcess();
+	}
+
+	/**
+	 * 
+	 * @throws IOException
+	 */
+	private void runCollaborationDataProcess() throws IOException {
+		CollabVizDataGenerator obj = new CollabVizDataGenerator();
+		obj.runProcess();
+	}
+
 	/**
 	 * Reads all the articles and infer the keywords. Reason to read all the articles 
 	 * is as we do not know which article is updated in near past. This means we need to 
@@ -100,10 +134,10 @@ public class MainEntryPoint_WorkFlow1 {
 	 * @throws SAXException
 	 */
 	private void runInferredKeywordProcess() throws IOException, ParserConfigurationException, SAXException {
-		KeywordMinerEntryPoint kmep = new KeywordMinerEntryPoint();
+		ArticleKeywordMinerEntryPoint kmep = new ArticleKeywordMinerEntryPoint();
 		kmep.runProcess();
 	}
-	
+
 	/**
 	 * Reads all keywords, mesh terms and inferred terms. 
 	 * Currently the word type is only one, either KEYWORD or MESH. 
@@ -175,6 +209,7 @@ public class MainEntryPoint_WorkFlow1 {
 
 		// CREATE NEW DIRECTORIES
 		createFolder(new File(Configuration.POSTPROCESS_RESULTSET_FOLDER+"/"+date+"/grant"));
+		createFolder(new File(Configuration.POSTPROCESS_RESULTSET_FOLDER+"/"+date+"/collab"));
 		createFolder(new File(Configuration.POSTPROCESS_RESULTSET_FOLDER+"/"+date+"/inferredkeywords"));
 		createFolder(new File(Configuration.POSTPROCESS_RESULTSET_FOLDER+"/"+date+"/kwclouds"));
 		createFolder(new File(Configuration.POSTPROCESS_RESULTSET_FOLDER+"/"+date+"/subjectarea"));
