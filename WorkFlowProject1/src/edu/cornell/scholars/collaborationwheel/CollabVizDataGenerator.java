@@ -69,7 +69,7 @@ public class CollabVizDataGenerator {
 		QUERY_RESULT_FOLDER = Configuration.QUERY_RESULTSET_FOLDER +"/"+ Configuration.date 
 				+ "/" + Configuration.COLLAB_WHEEL_DATA_FOLDER;
 		ORGCODE_FILE = Configuration.SUPPL_FOLDER + "/"+ Configuration.ORG_ORGCODE_MAP_FILE;
-		OUTPUT_FOLDER = Configuration.POSTPROCESS_RESULTSET_FOLDER+"/"+Configuration.date+"/"+Configuration.COLLABORATION_FOLDER;
+		OUTPUT_FOLDER = Configuration.POSTPROCESS_RESULTSET_FOLDER+"/"+Configuration.date+"/"+Configuration.COLLABORATION_FOLDER+"/"+Configuration.COLLAB_INTERNAL_FOLDER;
 	}
 
 	/**

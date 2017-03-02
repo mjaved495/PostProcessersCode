@@ -32,7 +32,6 @@ import org.xml.sax.SAXException;
 import com.opencsv.CSVReader;
 
 import edu.cornell.scholars.config.Configuration;
-import edu.cornell.scholars.keywordminer.article.ArticleEntries;
 import edu.cornell.scholars.keywordminer.article.Mesh;
 import edu.cornell.scholars.workflow1.MainEntryPoint_WorkFlow1;
 

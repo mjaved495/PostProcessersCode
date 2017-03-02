@@ -208,11 +208,12 @@ public class MainEntryPoint_WorkFlow1 {
 		Configuration.setSUPPL_FOLDER(map.get("SUPPL_FOLDER"));
 
 		// CREATE NEW DIRECTORIES
-		createFolder(new File(Configuration.POSTPROCESS_RESULTSET_FOLDER+"/"+date+"/grant"));
-		createFolder(new File(Configuration.POSTPROCESS_RESULTSET_FOLDER+"/"+date+"/collab"));
-		createFolder(new File(Configuration.POSTPROCESS_RESULTSET_FOLDER+"/"+date+"/inferredkeywords"));
-		createFolder(new File(Configuration.POSTPROCESS_RESULTSET_FOLDER+"/"+date+"/kwclouds"));
-		createFolder(new File(Configuration.POSTPROCESS_RESULTSET_FOLDER+"/"+date+"/subjectarea"));
+		createFolder(new File(Configuration.POSTPROCESS_RESULTSET_FOLDER+"/"+date+"/"+Configuration.GRANTS_FOLDER));
+		createFolder(new File(Configuration.POSTPROCESS_RESULTSET_FOLDER+"/"+date+"/"+Configuration.COLLABORATION_FOLDER+"/"+Configuration.COLLAB_EXTERNAL_FOLDER));
+		createFolder(new File(Configuration.POSTPROCESS_RESULTSET_FOLDER+"/"+date+"/"+Configuration.COLLABORATION_FOLDER+"/"+Configuration.COLLAB_INTERNAL_FOLDER));
+		createFolder(new File(Configuration.POSTPROCESS_RESULTSET_FOLDER+"/"+date+"/"+Configuration.INFERRED_KEYWORDS_FOLDER));
+		createFolder(new File(Configuration.POSTPROCESS_RESULTSET_FOLDER+"/"+date+"/"+Configuration.HOMEPAGE_KEYWORD_CLOUD_FOLDER));
+		createFolder(new File(Configuration.POSTPROCESS_RESULTSET_FOLDER+"/"+date+"/"+Configuration.SUBJECTAREA_FOLDER));
 
 	}
 
