@@ -85,8 +85,10 @@ public class CollabVizDataGenerator {
 		college.setName(getCollegeCode(inputFileName).toUpperCase());
 		college.setDescription(getFullCollegeName(inputFileName));
 		processACollege(college, data);
-
-		createJSONData(college, outputFilePath);
+		if(college.getChildren() != null && college.getChildren().size() > 0){
+			createJSONData(college, outputFilePath);
+		}
+		
 		LOGGER.info("PROCESSC COMPELTED");
 	}
 	
