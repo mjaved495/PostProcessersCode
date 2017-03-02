@@ -39,8 +39,8 @@ public static String date = null;
 	public static String OSP_INV_FILENAME = "Investigators.xml";
 	public static String OSP_ADMNDEPT_FILENAME ="AdministringDepartmentMapper.csv";
 	
-	public static String FOR_JOURNAL_CLSFCN_FILENAME ="forJournalClassification.csv";
-	public static String WOS_JOURNAL_CLSFCN_FILENAME ="wosJournalClassification.csv";
+	public static String FOR_JOURNAL_CLSFCN_FILENAME ="JournalClassification-FOR.csv";
+	public static String WOS_JOURNAL_CLSFCN_FILENAME ="JournalClassification-WOS.csv";
 	
 	public static String PERSON_2_ARTICLE_MAP_FILENAME = "Person2ArticleArticleIdMap.csv";
 	
