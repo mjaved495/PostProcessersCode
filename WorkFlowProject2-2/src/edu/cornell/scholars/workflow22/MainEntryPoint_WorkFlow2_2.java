@@ -7,7 +7,7 @@ import java.util.Date;
 import java.util.Map;
 import java.util.logging.Logger;
 
-import edu.cornell.scholars.collaboration.collabharvester.WOSTSVFileReader;
+import edu.cornell.scholars.collaboration.globalcollabharvester.GlobalCollaborationHarvesterEntryPoint;
 import edu.cornell.scholars.collaboration.gridmapper.WOSDataFileReaderGRIDMapper;
 import edu.cornell.scholars.collaboration.gridmapper.WosQueryResultsSetDataParser;
 import edu.cornell.scholars.config.Configuration;
@@ -15,7 +15,7 @@ import edu.cornell.scholars.config.Configuration;
 public class MainEntryPoint_WorkFlow2_2 {
 
 	private static final Logger LOGGER = Logger.getLogger( MainEntryPoint_WorkFlow2_2.class.getName() );
-	
+
 	public static void main(String[] args) {
 		try {
 			if(args.length > 0){
@@ -29,15 +29,15 @@ public class MainEntryPoint_WorkFlow2_2 {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
+
 	}
-	
+
 	public static void init(String propFilePath) throws IOException{
 		String date = getCurrentDate();
 		Configuration.setDate(date);
 		generateDirectories(date, propFilePath);
 	}
-	
+
 	private void runProcess() {
 
 		//Step 1: run the WOS queries (in WorkFlowProject1)
@@ -50,19 +50,23 @@ public class MainEntryPoint_WorkFlow2_2 {
 		//Step 3: Read the WOS_DATA_FILE file and save Affiliation-GRID map
 		WOSDataFileReaderGRIDMapper obj = new WOSDataFileReaderGRIDMapper();
 		obj.runProcess();
-		
+
 		//Step 4: Read the WOS_DATA_FILE file and process and save the Collaboration Wheel and Global Collaboration Process
 		LOGGER.info("---------- STARTING COLLABORATIN WHEEL AND GLOBAL COLLABORATION PROCESS----------");
 		runCollaborationProcess();
-		
+
 		LOGGER.info("---------- ALL PROCESSES COMPLETED----------");
 	}
 
 	private void runCollaborationProcess() {
-		WOSTSVFileReader obj = new WOSTSVFileReader();
-		obj.runProcess();
+		try {
+			GlobalCollaborationHarvesterEntryPoint obj = new GlobalCollaborationHarvesterEntryPoint();
+			obj.runProcess();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
-	
+
 	private static String getCurrentDate() {
 		String date = null;
 		Date now = new Date();
@@ -72,7 +76,7 @@ public class MainEntryPoint_WorkFlow2_2 {
 		LOGGER.info(date);
 		return date;
 	}
-	
+
 	private static void generateDirectories(String date, String propFilePath) throws IOException {
 
 		// SET FILEPATHS
@@ -89,9 +93,9 @@ public class MainEntryPoint_WorkFlow2_2 {
 		createFolder(new File(Configuration.POSTPROCESS_RESULTSET_FOLDER+"/"+date+"/inferredkeywords"));
 		createFolder(new File(Configuration.POSTPROCESS_RESULTSET_FOLDER+"/"+date+"/kwclouds"));
 		createFolder(new File(Configuration.POSTPROCESS_RESULTSET_FOLDER+"/"+date+"/subjectarea"));
-		
+
 		createFolder(new File(Configuration.QUERY_RESULTSET_FOLDER+"/"+date+"/wosdata"));
-		
+
 	}
 
 	private static void createFolder(File file) {

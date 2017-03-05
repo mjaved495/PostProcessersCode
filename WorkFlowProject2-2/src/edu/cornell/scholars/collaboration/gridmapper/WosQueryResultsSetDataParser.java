@@ -28,10 +28,8 @@ public class WosQueryResultsSetDataParser {
 	}
 
 	public void runProcess() {
-		articles_tsv = readWOSFiles(new File(Configuration.QUERY_RESULTSET_FOLDER + "/"+ Configuration.date + "/"+ Configuration.WOS_DATA_FOLDER));
-		
-		String filePath = Configuration.QUERY_RESULTSET_FOLDER+"/"+Configuration.date+"/"
-				+Configuration.WOS_DATA_FOLDER+"/"+Configuration.WOS_DATA_FILENAME;
+		articles_tsv = readWOSFiles(new File(Configuration.SUPPL_FOLDER + "/"+Configuration.WOS_DATA_FOLDER));
+		String filePath = Configuration.SUPPL_FOLDER + "/"+Configuration.WOS_DATA_FOLDER+"/"+Configuration.WOS_DATA_FILENAME;
 		saveData(articles_tsv, filePath);
 	}
 

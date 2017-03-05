@@ -32,10 +32,38 @@ public class AuthorAffiliation {
 	public void setGridURI(String gridURI) {
 		this.gridURI = gridURI;
 	}
-	
+
 	@Override
-	public String toString() {
-		return "\""+localName + "\",\"" + gridURI+"\"";
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((gridURI == null) ? 0 : gridURI.hashCode());
+		result = prime * result + ((localName == null) ? 0 : localName.hashCode());
+		return result;
 	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		AuthorAffiliation other = (AuthorAffiliation) obj;
+		if (gridURI == null) {
+			if (other.gridURI != null)
+				return false;
+		} else if (!gridURI.equals(other.gridURI))
+			return false;
+		if (localName == null) {
+			if (other.localName != null)
+				return false;
+		} else if (!localName.equals(other.localName))
+			return false;
+		return true;
+	}
+	
+	
 	
 }

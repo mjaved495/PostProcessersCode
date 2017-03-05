@@ -29,8 +29,7 @@ public class WOSDataFileReaderGRIDMapper {
 	private static final Logger LOGGER = Logger.getLogger(WOSDataFileReaderGRIDMapper.class.getName()); 
 			
 	//input files
-	private final static String WOS_DATA_FILE = Configuration.QUERY_RESULTSET_FOLDER+"/"+Configuration.date+"/"
-			+Configuration.WOS_DATA_FOLDER+"/"+Configuration.WOS_DATA_FILENAME;
+	private final static String WOS_DATA_FILE = Configuration.SUPPL_FOLDER + "/"+Configuration.WOS_DATA_FOLDER+"/"+Configuration.WOS_DATA_FILENAME;
 	private final static String GRID_FILENAME = Configuration.SUPPL_FOLDER+"/"+Configuration.GRID_FILENAME;
 	private final static String COUNTRIES_FILE = Configuration.SUPPL_FOLDER +"/"+Configuration.COUNTRIES_FILE;
 	private final static String USA_STATE_FILE = Configuration.SUPPL_FOLDER +"/"+Configuration.USA_STATE_FILE;

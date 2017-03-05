@@ -5,9 +5,6 @@ public class Person {
 	// name of the person
 	private String personName;
 	
-	// Count of collaborations for this person
-	//private Integer collabCount;
-	
 	// net Id if available
 	private String netId;
 
