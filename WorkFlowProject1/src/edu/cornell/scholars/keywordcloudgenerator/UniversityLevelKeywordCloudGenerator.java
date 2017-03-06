@@ -91,7 +91,7 @@ public class UniversityLevelKeywordCloudGenerator {
 				+ "/" + Configuration.ARTICLE_2_INFERREDKEYWORD_FILENAME;
 
 		UNIVERISTY_KEYWORD_CLOUD = Configuration.POSTPROCESS_RESULTSET_FOLDER +"/"+ Configuration.date +"/"+
-				Configuration.HOMEPAGE_KEYWORD_CLOUD_FOLDER + "/" + Configuration.HOMEPAGE_KEYWORD_CLOUD;
+				Configuration.HOMEPAGE_KEYWORD_CLOUD_FOLDER + "/" + Configuration.HOMEPAGE_KEYWORD_CLOUD_FILENAME;
 	}
 
 	public void runProcess() throws IOException, ParserConfigurationException, SAXException {

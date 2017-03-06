@@ -34,6 +34,7 @@ import org.xml.sax.SAXException;
 import com.opencsv.CSVReader;
 
 import edu.cornell.scholars.config.Configuration;
+import edu.cornell.scholars.keywordminer.grants.GrantEntries;
 import edu.cornell.scholars.workflow1.MainEntryPoint_WorkFlow1;
 
 public class ArticleKeywordMinerEntryPoint {
@@ -80,6 +81,7 @@ public class ArticleKeywordMinerEntryPoint {
 	}
 
 	private void setLocalDirectories() {
+		
 		ARTICLE_FILENAME = Configuration.QUERY_RESULTSET_FOLDER +"/"+ Configuration.date +"/"+
 				Configuration.ARTICLE_2_TITLE_ABSTRACT_MAP_FILENAME;
 		ALL_KW_FILENAME = Configuration.QUERY_RESULTSET_FOLDER +"/"+ Configuration.date +"/"+
@@ -341,38 +343,39 @@ public class ArticleKeywordMinerEntryPoint {
 		return result;
 	}
 
-	private List<ArticleEntries> readArticleMapFile(File file) throws IOException {
+	private List<ArticleEntries> readArticleMapFile(File xmlFile) throws IOException, ParserConfigurationException, SAXException {
 		List<ArticleEntries> rows = new ArrayList<ArticleEntries>();
-		BufferedReader br = null;
-		String line = "";
-		long lineCount = 0;
-		br = new BufferedReader(new FileReader(file));
-		while ((line = br.readLine()) != null) {
-			lineCount++;
-			if(line.trim().length() == 0) continue;
-			@SuppressWarnings("resource")
-			CSVReader reader = new CSVReader(new StringReader(line),'|');	
+		DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+		DocumentBuilder dBuilder;
+		dBuilder = dbFactory.newDocumentBuilder();
+		Document doc = dBuilder.parse(xmlFile);
+		NodeList entryList = doc.getElementsByTagName("result");
+		for(int index=0; index< entryList.getLength(); index++){
 			ArticleEntries obj = new ArticleEntries();
-			String[] tokens;
-			while ((tokens = reader.readNext()) != null) {
-				try {
-					obj.setArticleURI(tokens[0]);
-					obj.setArticleTitle(tokens[1]);
-					if(tokens[2] != null){
-						obj.setArticleAbstract(tokens[2]);
-					}
-				}catch (ArrayIndexOutOfBoundsException exp) {
-					for (String s : tokens) {
-						LOGGER.warning("ArrayIndexOutOfBoundsException: "+ lineCount+" :"+ s);
-					}
-					LOGGER.warning("\n");
-					continue;
+			Node node = entryList.item(index);
+			//System.out.println(node.getNodeName());
+			Element eElement = (Element) node;
+			NodeList bindingNodes = eElement.getElementsByTagName("binding");
+			for(int i=0; i< bindingNodes.getLength(); i++){
+				Node n = bindingNodes.item(i);
+				Element bindElement = (Element) n;
+				String att = bindElement.getAttribute("name");
+				switch(att){
+				case "article": 
+					obj.setArticleURI(bindElement.getElementsByTagName("uri").item(0).getTextContent());
+					break;
+				case "articleTitle": 
+					obj.setArticleTitle(bindElement.getElementsByTagName("literal").item(0).getTextContent());
+					break;
+				case "abstract": 
+					obj.setArticleAbstract(bindElement.getElementsByTagName("literal").item(0).getTextContent());
+					break;
 				}
 			}
 			rows.add(obj);
-		}
-		LOGGER.info("article to title-abstract line count:"+lineCount);
-		br.close();
+		}// end of reading entries.
+		
+		LOGGER.info("article to title-abstract count:"+rows.size());
 		return rows;
 	}
 

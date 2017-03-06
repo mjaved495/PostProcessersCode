@@ -70,8 +70,7 @@ public class InputFilesReader {
 				Configuration.OSP_INV_FILENAME;		
 		PERSON_NETID_DEPT_MAPPER_FILENAME = Configuration.QUERY_RESULTSET_FOLDER + "/" + Configuration.date + "/"+
 				Configuration.PERSON_2_DEPT_UNIT_MAP_FILENAME;
-		DEPARTMENT_MAPPER_FILENAME = Configuration.QUERY_RESULTSET_FOLDER + "/" + Configuration.date + "/"+
-				Configuration.OSP_ADMNDEPT_FILENAME;
+		DEPARTMENT_MAPPER_FILENAME = Configuration.SUPPL_FOLDER + "/" + Configuration.OSP_ADMNDEPT_FILENAME;
 		ALL_GRANTS_FILE = Configuration.QUERY_RESULTSET_FOLDER + "/" + Configuration.date + "/"+
 				Configuration.ALL_GRANTS_FILENAME;
 

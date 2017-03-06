@@ -214,7 +214,6 @@ public class MainEntryPoint_WorkFlow1 {
 		createFolder(new File(Configuration.POSTPROCESS_RESULTSET_FOLDER+"/"+date+"/"+Configuration.INFERRED_KEYWORDS_FOLDER));
 		createFolder(new File(Configuration.POSTPROCESS_RESULTSET_FOLDER+"/"+date+"/"+Configuration.HOMEPAGE_KEYWORD_CLOUD_FOLDER));
 		createFolder(new File(Configuration.POSTPROCESS_RESULTSET_FOLDER+"/"+date+"/"+Configuration.SUBJECTAREA_FOLDER));
-
 	}
 
 	private static void createFolder(File file) {

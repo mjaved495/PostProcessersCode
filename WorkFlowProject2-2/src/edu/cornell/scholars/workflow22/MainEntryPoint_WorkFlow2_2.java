@@ -89,11 +89,6 @@ public class MainEntryPoint_WorkFlow2_2 {
 		// CREATE NEW DIRECTORIES
 		createFolder(new File(Configuration.POSTPROCESS_RESULTSET_FOLDER+"/"+date+"/collab/external"));
 		createFolder(new File(Configuration.POSTPROCESS_RESULTSET_FOLDER+"/"+date+"/collab/internal"));
-		createFolder(new File(Configuration.POSTPROCESS_RESULTSET_FOLDER+"/"+date+"/grant"));
-		createFolder(new File(Configuration.POSTPROCESS_RESULTSET_FOLDER+"/"+date+"/inferredkeywords"));
-		createFolder(new File(Configuration.POSTPROCESS_RESULTSET_FOLDER+"/"+date+"/kwclouds"));
-		createFolder(new File(Configuration.POSTPROCESS_RESULTSET_FOLDER+"/"+date+"/subjectarea"));
-
 		createFolder(new File(Configuration.QUERY_RESULTSET_FOLDER+"/"+date+"/wosdata"));
 
 	}
