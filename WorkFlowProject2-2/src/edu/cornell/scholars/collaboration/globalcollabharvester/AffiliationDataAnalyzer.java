@@ -16,6 +16,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.opencsv.CSVReader;
 
+import edu.cornell.scholars.collaboration.datamodel.data.Author;
 import edu.cornell.scholars.collaboration.datamodel.data.ExternalCollaboration;
 import edu.cornell.scholars.collaboration.gridmapper.Article_TSV;
 import edu.cornell.scholars.collaboration.gridreader.GridModel;
@@ -116,13 +117,63 @@ public class AffiliationDataAnalyzer {
 		return map;
 	}
 
-	public void saveGlobaleCollaborations(String jsonfile) throws JsonGenerationException, JsonMappingException, IOException {
+//	public void saveGlobaleCollaborations(String jsonfile) throws JsonGenerationException, JsonMappingException, IOException {
+//		List<ExternalCollaboration> collabData = globalCollaboration.getExtCollab();
+//		ObjectMapper mapper = new ObjectMapper();
+//		String jsonInString = null;
+//		mapper.writeValue(new File(jsonfile), collabData);
+//		jsonInString = mapper.writeValueAsString(collabData);
+//		//System.out.println(jsonInString);
+//
+//	}
+
+	public void saveGlobalCollaborations(String stateFileName, String countryFileName) throws JsonGenerationException, JsonMappingException, IOException {
 		List<ExternalCollaboration> collabData = globalCollaboration.getExtCollab();
+		
+		Map<String, Set<ExternalCollaboration>> stateMap = new HashMap<String, Set<ExternalCollaboration>>();
+		Map<String, Set<ExternalCollaboration>> countryMap = new HashMap<String, Set<ExternalCollaboration>>();
+		
+		for(ExternalCollaboration c: collabData){
+			Set<Author> authors = c.getAuthors();
+			String state = null;
+			String country = null;
+			for(Author a: authors){
+				state = a.getState();
+				if(state != null){
+					Set<ExternalCollaboration> stateSet = stateMap.get(state);
+					if(stateSet == null){
+						stateSet = new HashSet<ExternalCollaboration>();
+						stateSet.add(c);
+						stateMap.put(state, stateSet);
+					}else{
+						stateSet.add(c);
+					}
+				}
+				country = a.getCountry();
+				if(country != null){
+					Set<ExternalCollaboration> countrySet = countryMap.get(country);
+					if(countrySet == null){
+						countrySet = new HashSet<ExternalCollaboration>();
+						countrySet.add(c);
+						countryMap.put(country, countrySet);
+					}else{
+						countrySet.add(c);
+					}
+				}
+				if(state == null && country == null){
+					System.err.println("Country and State values are NULL: "+ a.getAuthorAffiliation());
+				}
+			}
+		}
+		
+		saveDataInJSON(stateMap,   stateFileName);
+		saveDataInJSON(countryMap, countryFileName);
+	}
+
+	private void saveDataInJSON(Map<String, Set<ExternalCollaboration>> map, String fileName) throws JsonGenerationException, JsonMappingException, IOException {
 		ObjectMapper mapper = new ObjectMapper();
 		String jsonInString = null;
-		mapper.writeValue(new File(jsonfile), collabData);
-		jsonInString = mapper.writeValueAsString(collabData);
-		//System.out.println(jsonInString);
-
+		mapper.writeValue(new File(fileName), map);
+		jsonInString = mapper.writeValueAsString(map);
 	}
 }

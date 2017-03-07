@@ -24,7 +24,8 @@ public class Configuration {
 	public static String ARTICLE_2_SUBJECTAREA_FILENAME = "ArticleURI2SubjectAreas.csv";
 	public static String PERSON_2_ARTICLE_MAP_FILENAME = "Person2ArticleArticleIdMap.csv";
 	
-	public static String EXT_COLLABORATIONS_FILE_JSON = "ExternalCollaborations.json";
+	public static String EXT_COLLABORATIONS_FILE_STATE_JSON = "ExternalCollaborations-State.json";
+	public static String EXT_COLLABORATIONS_FILE_COUNTRY_JSON = "ExternalCollaborations-Country.json";
 
 	public static void setDate(String date) {
 		Configuration.date = date;

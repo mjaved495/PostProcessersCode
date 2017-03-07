@@ -7,7 +7,6 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.PrintWriter;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -38,7 +37,8 @@ public class GlobalCollaborationHarvesterEntryPoint {
 	private static String ARTICLE_2_SUBJECTAREA = null;
 	
 	//output files
-	private static String GLOBAL_COLLAB_JSON = null;
+	private static String GLOBAL_COLLAB_STATE_JSON = null;
+	private static String GLOBAL_COLLAB_COUNTRY_JSON = null;
 	
 	private List<Article_TSV> data = null;
 	private Map<String, GridModel> gridDataMap = null;
@@ -69,8 +69,10 @@ public class GlobalCollaborationHarvesterEntryPoint {
 		PERSON_2_ARTICLE_MAP =  Configuration.QUERY_RESULTSET_FOLDER + "/" + Configuration.date + "/"
 				+ Configuration.PERSON_2_ARTICLE_MAP_FILENAME;
 		
-		GLOBAL_COLLAB_JSON = Configuration.POSTPROCESS_RESULTSET_FOLDER   + "/" + Configuration.date + "/"
-				+ Configuration.COLLABORATION_FOLDER+"/"+Configuration.COLLAB_EXTERNAL_FOLDER+"/" + Configuration.EXT_COLLABORATIONS_FILE_JSON;
+		GLOBAL_COLLAB_STATE_JSON = Configuration.POSTPROCESS_RESULTSET_FOLDER   + "/" + Configuration.date + "/"
+				+ Configuration.COLLABORATION_FOLDER+"/"+Configuration.COLLAB_EXTERNAL_FOLDER+"/" + Configuration.EXT_COLLABORATIONS_FILE_STATE_JSON;
+		GLOBAL_COLLAB_COUNTRY_JSON = Configuration.POSTPROCESS_RESULTSET_FOLDER   + "/" + Configuration.date + "/"
+				+ Configuration.COLLABORATION_FOLDER+"/"+Configuration.COLLAB_EXTERNAL_FOLDER+"/" + Configuration.EXT_COLLABORATIONS_FILE_COUNTRY_JSON;
 	}
 
 	public void runProcess() throws JsonGenerationException, JsonMappingException, IOException {
@@ -88,7 +90,10 @@ public class GlobalCollaborationHarvesterEntryPoint {
 		/**
 		 * save the identified global collaboration data is json
 		 */
-		aff_analyzer.saveGlobaleCollaborations(GLOBAL_COLLAB_JSON);
+		//aff_analyzer.saveGlobaleCollaborations(GLOBAL_COLLAB_JSON);
+		
+		aff_analyzer.saveGlobalCollaborations(GLOBAL_COLLAB_STATE_JSON, GLOBAL_COLLAB_COUNTRY_JSON);
+		
 	}
 	
 	private Map<String, Person2ArticleMap> readPerson2ArticleMapFile(String filePath) {
