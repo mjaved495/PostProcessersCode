@@ -60,7 +60,6 @@ public class JournalToSubjectAreaMapEntryPoint {
 		try {
 			MainEntryPoint_WorkFlow1.init("resources/setup.properties");
 			JournalToSubjectAreaMapEntryPoint jrnlep = new JournalToSubjectAreaMapEntryPoint();
-			jrnlep.setLocalDirectories();
 			jrnlep.runProcess();
 		} catch (NoSuchAlgorithmException | IOException | InterruptedException e) {
 			e.printStackTrace();
@@ -68,17 +67,20 @@ public class JournalToSubjectAreaMapEntryPoint {
 	}
 
 	private void setLocalDirectories() {
-		JOURNAL_INPUT_FILENAME = Configuration.QUERY_RESULTSET_FOLDER +"/"+ Configuration.date +"/"+
+		
+		JOURNAL_INPUT_FILENAME = 	Configuration.QUERY_RESULTSET_FOLDER +"/"+ Configuration.date +"/"+
 				Configuration.JOURNAL_2_ISSN_EISSN_SUBJECTAREA_MAP_FILENAME;	
-		JOURNALID_MASTER_FILENAME = Configuration.SUPPL_FOLDER +"/"+ Configuration.JOURNAL_MASTER_FILENAME;
-		subjectAreaFile = Configuration.QUERY_RESULTSET_FOLDER +"/"+ Configuration.date +"/"+
+		subjectAreaFile =			 Configuration.QUERY_RESULTSET_FOLDER +"/"+ Configuration.date +"/"+
 				Configuration.ALL_SUBJECTAREAS_FILENAME;
-		WOS_DataFile = Configuration.SUPPL_FOLDER +"/"+ Configuration.WOS_JOURNAL_CLSFCN_FILENAME;		
-		FOR_DataFile = Configuration.SUPPL_FOLDER +"/"+ Configuration.FOR_JOURNAL_CLSFCN_FILENAME;	
+		
+		WOS_DataFile = 				Configuration.SUPPL_FOLDER +"/"+ Configuration.WOS_JOURNAL_CLSFCN_FILENAME;		
+		FOR_DataFile = 				Configuration.SUPPL_FOLDER +"/"+ Configuration.FOR_JOURNAL_CLSFCN_FILENAME;	
+		JOURNALID_MASTER_FILENAME = Configuration.SUPPL_FOLDER +"/"+ Configuration.JOURNAL_MASTER_FILENAME;
+		
 		//output file names
-		Journal2SubjectAreaDataFile = Configuration.POSTPROCESS_RESULTSET_FOLDER +"/"+ Configuration.date 
+		Journal2SubjectAreaDataFile = 	Configuration.POSTPROCESS_RESULTSET_FOLDER +"/"+ Configuration.date 
 				+"/"+Configuration.SUBJECTAREA_FOLDER+"/"+ Configuration.JOURNAL_2_SUBJECTAREA_CSV;
-		Journal2SubjectAreaRDFFile = Configuration.POSTPROCESS_RESULTSET_FOLDER +"/"+ Configuration.date 
+		Journal2SubjectAreaRDFFile = 	Configuration.POSTPROCESS_RESULTSET_FOLDER +"/"+ Configuration.date 
 				+"/"+Configuration.SUBJECTAREA_FOLDER+"/"+ Configuration.JOURNAL_2_SUBJECTAREA_NT;
 	}
 
@@ -163,23 +165,23 @@ public class JournalToSubjectAreaMapEntryPoint {
 			Journal obj = new Journal();
 			obj.setUri(schlrs_journal.getUri());
 			obj.setTitle(schlrs_journal.getTitle());
-			obj.setIssn(eissn);
+			obj.setIssn(issn);
 			obj.setEissn(eissn);
 
-			if(forISSNMap.get(issn) != null){ //forISSNMap  option1
+			if(!issn.isEmpty() && forISSNMap.get(issn) != null){ //forISSNMap  option1
 				String subjectArea = forISSNMap.get(issn);
 				if(!subjectArea.trim().isEmpty()){
 					obj.setForSubjectArea(subjectArea);
 				}
 				filledFORCount++;
-			}else if(forEISSNMap.get(eissn) != null){ //forEISSNMap option2
+			}else if(!eissn.isEmpty() && forEISSNMap.get(eissn) != null){ //forEISSNMap option2
 				String subjectArea = forEISSNMap.get(eissn);
 				if(!subjectArea.trim().isEmpty()){
 					obj.setForSubjectArea(subjectArea);
 				}
 				filledFORCount++;
 			}
-			if(wosISSNMap.get(issn) != null){ //wosISSNMap  option3
+			if(!issn.isEmpty() && wosISSNMap.get(issn) != null){ //wosISSNMap  option3
 				Set<String> subjectAreas = wosISSNMap.get(issn);
 				if(subjectAreas.size() >0){
 					for(String subjectArea: subjectAreas){
@@ -189,8 +191,8 @@ public class JournalToSubjectAreaMapEntryPoint {
 					}	
 				}
 				filledWOSCount++;
-			}else if(wosEISSNMap.get(eissn) != null){ //wosEISSNMap option4
-				Set<String> subjectAreas = wosEISSNMap.get(issn);
+			}else if(!eissn.isEmpty() && wosEISSNMap.get(eissn) != null){ //wosEISSNMap option4
+				Set<String> subjectAreas = wosEISSNMap.get(eissn);
 				if(subjectAreas != null && subjectAreas.size() >0){
 					for(String subjectArea: subjectAreas){
 						if (!subjectArea.isEmpty()){
@@ -219,6 +221,7 @@ public class JournalToSubjectAreaMapEntryPoint {
 			lineCount++;
 			if(line.trim().length() == 0) continue; //header or empty line
 			CSVReader reader = new CSVReader(new StringReader(line),'|');	
+			//CSVReader reader = new CSVReader(new StringReader(line),',','\"');
 			String[] tokens;
 			while ((tokens = reader.readNext()) != null) {
 				try {
@@ -271,22 +274,22 @@ public class JournalToSubjectAreaMapEntryPoint {
 					if(issns.contains(issn)){
 						LOGGER.warning("WOS: "+issn+" issn already exists.");
 					}
-					if(eissns.contains(issn)){
+					if(eissns.contains(eissn)){
 						LOGGER.warning("WOS: "+eissn+" eissn already exists.");
 					}
 
-					if(wosISSNMap.get(issn) != null){
+					if(issn != null && wosISSNMap.get(issn) != null){
 						Set<String> subjectAreas = wosISSNMap.get(issn);
 						subjectAreas.add(subjectArea);
-					}else{
+					}else if(issn != null){
 						Set<String> subjectAreas = new HashSet<String>();
 						subjectAreas.add(subjectArea);
 						wosISSNMap.put(issn, subjectAreas);
 					}
-					if(wosEISSNMap.get(eissn) != null){
+					if(eissn != null && wosEISSNMap.get(eissn) != null){
 						Set<String> subjectAreas = wosEISSNMap.get(eissn);
 						subjectAreas.add(subjectArea);
-					}else{
+					}else if(eissn != null){
 						Set<String> subjectAreas = new HashSet<String>();
 						subjectAreas.add(subjectArea);
 						wosEISSNMap.put(eissn, subjectAreas);
@@ -323,8 +326,8 @@ public class JournalToSubjectAreaMapEntryPoint {
 			String[] tokens;
 			while ((tokens = reader.readNext()) != null) {
 				try {
-					//System.out.println(tokens[4]);
-
+					String issn = tokens[5];
+					String eissn = tokens[6];
 					if(issns.contains(tokens[5].trim())){
 						LOGGER.warning("FOR: "+tokens[5]+" issn already exists.");
 					}else if(!tokens[5].trim().isEmpty()){
@@ -362,6 +365,7 @@ public class JournalToSubjectAreaMapEntryPoint {
 			if(lineCount == 1 || line.trim().length() == 0) continue; //header
 			@SuppressWarnings("resource")
 			CSVReader reader = new CSVReader(new StringReader(line),'|');	
+			//CSVReader reader = new CSVReader(new StringReader(line),',','\"');
 			String[] tokens;
 			while ((tokens = reader.readNext()) != null) {
 				try {
