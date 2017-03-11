@@ -21,12 +21,9 @@ public class ScholarsArticleDataReader {
 	private static final Logger LOGGER = Logger.getLogger(ScholarsArticleDataReader.class.getName());
 	
 	//input file names
-	private final static String ARTICLEID_MASTER_FILENAME = Configuration.SUPPL_FOLDER +"/"+ Configuration.ARTICLEID_MASTER_FILENAME;
-	private final static String ARTICLEID_CURRENT_FILENAME = Configuration.QUERY_RESULTSET_FOLDER + "/" + Configuration.date + "/" + Configuration.ARTICLE_2_WOS_PUBMED_ID_MAP_FILE_CSV;
-
-	private final static String WOS_QUERY_FILENAME = Configuration.QUERY_RESULTSET_FOLDER +"/"+ Configuration.date +"/"+
-			Configuration.WOS_QUERY_FILENAME;
-
+	private static String ARTICLEID_MASTER_FILENAME = null;
+	private static String ARTICLEID_CURRENT_FILENAME = null;
+	private static String WOS_QUERY_FILENAME = null;
 
 	private Map<String,String> articleIds = null;   //<articleId, source>
 	private Map<String,String> articleIds_master = null; //<id, source> 
@@ -43,11 +40,20 @@ public class ScholarsArticleDataReader {
 	}
 
 	public void runProcess() throws IOException {	
+		setLocalDirectories();
 		articleIds = readAllArticleIdFile(ARTICLEID_CURRENT_FILENAME);
 		articleIds_master = readMasterArticleFile(new File(ARTICLEID_MASTER_FILENAME));
 		articleIds_new = getNewArticleIds(articleIds, articleIds_master);
 		print_wos_query_lines(articleIds_new, WOS_QUERY_FILENAME);
 		updateMasterArticleFile(articleIds_new, new File(ARTICLEID_MASTER_FILENAME));
+	}
+
+	private void setLocalDirectories() {
+		ARTICLEID_MASTER_FILENAME = Configuration.SUPPL_FOLDER +"/"+ Configuration.ARTICLEID_MASTER_FILENAME;
+		ARTICLEID_CURRENT_FILENAME = Configuration.QUERY_RESULTSET_FOLDER + "/" 
+				+ Configuration.date + "/" + Configuration.ARTICLE_2_WOS_PUBMED_ID_MAP_FILE_CSV;
+		WOS_QUERY_FILENAME = Configuration.QUERY_RESULTSET_FOLDER +"/"+ Configuration.date +"/"+
+				Configuration.WOS_QUERY_FILENAME;
 	}
 
 	private Map<String, String> readAllArticleIdFile(String filePath) throws IOException {

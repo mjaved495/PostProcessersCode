@@ -87,9 +87,8 @@ public class MainEntryPoint_WorkFlow2_2 {
 		Configuration.setSUPPL_FOLDER(map.get("SUPPL_FOLDER"));
 
 		// CREATE NEW DIRECTORIES
-		createFolder(new File(Configuration.POSTPROCESS_RESULTSET_FOLDER+"/"+date+"/collab/external"));
-		createFolder(new File(Configuration.POSTPROCESS_RESULTSET_FOLDER+"/"+date+"/collab/internal"));
-		createFolder(new File(Configuration.QUERY_RESULTSET_FOLDER+"/"+date+"/wosdata"));
+		createFolder(new File(Configuration.POSTPROCESS_RESULTSET_FOLDER+"/"+date+"/"+Configuration.COLLABORATION_FOLDER+"/"+Configuration.COLLAB_EXTERNAL_FOLDER));
+		createFolder(new File(Configuration.SUPPL_FOLDER+"/"+Configuration.WOS_DATA_FOLDER));
 
 	}
 
