@@ -162,6 +162,13 @@ public class JournalToSubjectAreaMapEntryPoint {
 		for(Journal schlrs_journal: journals){
 			String issn = schlrs_journal.getIssn();
 			String eissn = schlrs_journal.getEissn();
+			
+			if(issn.equals("1468-0777") || eissn.equals("1471-5902")){
+				//System.out.println("here i am ");
+			}
+			
+			
+			
 			Journal obj = new Journal();
 			obj.setUri(schlrs_journal.getUri());
 			obj.setTitle(schlrs_journal.getTitle());
@@ -426,7 +433,7 @@ public class JournalToSubjectAreaMapEntryPoint {
 						uri= SCHOLARS_IND+"SA-"+id;
 					}
 					subA = rdfmodel.createResource(uri);
-					subA.addProperty(RDF.type, SKOS_CONCEPT);
+					subA.addProperty(RDF.type, rdfmodel.createResource(SKOS_CONCEPT));
 					subA.addProperty(RDFS.label, sa);
 
 					subjectURIs.add(uri);
