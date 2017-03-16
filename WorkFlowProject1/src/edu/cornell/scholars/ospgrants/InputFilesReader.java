@@ -272,17 +272,46 @@ public class InputFilesReader {
 
 	private Map<String, Grant> readAllGrantsFile(String filePath) throws IOException {
 		Map<String, Grant> grants = new HashMap<String, Grant>();
-		Reader in;
-		in = new FileReader(filePath);
-		Iterable<CSVRecord> records = null;
-		records = CSVFormat.EXCEL.withDelimiter(',').withQuote('"').parse(in);
-		for (CSVRecord record : records) {
-			String id = record.get(0);
-			String uri = record.get(1);
-			String typeURI = record.get(2);
-			Grant g = new Grant(id, uri, typeURI);
-			grants.put(id, g);
+		BufferedReader br = null;
+		String line = "";
+		long lineCount = 0;
+		br = new BufferedReader(new FileReader(new File(filePath)));
+		while ((line = br.readLine()) != null) {
+			lineCount++;
+			if(line.trim().length() == 0) continue;
+			@SuppressWarnings("resource")	
+			CSVReader reader = new CSVReader(new StringReader(line),',','\"');
+			String[] tokens;
+			while ((tokens = reader.readNext()) != null) {
+				try {
+					String id = tokens[0];
+					String uri = tokens[1];
+					String typeURI = tokens[2];
+					Grant g = new Grant(id, uri, typeURI);
+					grants.put(id, g);
+				}catch (ArrayIndexOutOfBoundsException exp) {
+					for (String s : tokens) {
+						LOGGER.warning("ArrayIndexOutOfBoundsException: "+ lineCount+" :"+ s);
+					}
+					LOGGER.warning("\n");
+					continue;
+				}
+			}
 		}
+		br.close();
+		
+		
+//		Reader in;
+//		in = new FileReader(filePath);
+//		Iterable<CSVRecord> records = null;
+//		records = CSVFormat.EXCEL.withDelimiter(',').withQuote('"').parse(in);
+//		for (CSVRecord record : records) {
+//			String id = record.get(0);
+//			String uri = record.get(1);
+//			String typeURI = record.get(2);
+//			Grant g = new Grant(id, uri, typeURI);
+//			grants.put(id, g);
+//		}
 		LOGGER.info("GRANTS: Existing grants in Scholars "+ grants.size()); 
 		return grants;
 	}

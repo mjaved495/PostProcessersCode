@@ -90,6 +90,12 @@ public class RDFBuilder {
 		Map<String, String> org_map = readOrgFile(ORG_LIST_MASTER);
 
 		List<GrantModel> data = readFile(inputFile);
+		
+		if(data.size() == 0){
+			LOGGER.info("GRANTS: "+data.size() + " new grants found in txt file....returning.");
+			return;
+		}
+		
 		Set<Integer> uniqueKeys = gen(data.size());
 
 		Map<String, String> map = new HashMap<String, String>();  // <project id, project uri>
