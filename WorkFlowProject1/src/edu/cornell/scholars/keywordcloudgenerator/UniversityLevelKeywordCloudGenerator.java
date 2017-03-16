@@ -4,7 +4,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.Reader;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -21,8 +20,6 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVRecord;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -58,7 +55,19 @@ public class UniversityLevelKeywordCloudGenerator {
 	private Map<String, Set<String>> articleINFKWMap = null;
 	private Map<String, Set<Person>> article2person = null;
 	private Set<String> NFPersonArticles = null;
-
+	private String[] sw =  {
+			"Animals",
+			"Humans",
+			"Male",
+			"Female",
+			"Mice",
+			"Rats",
+			"Cattle",
+			"Swine",
+			"Sheep"
+			};
+	private Set<String> stopwords = new HashSet<String>();
+	
 	public static void main(String[] args) {
 		try {
 			MainEntryPoint_WorkFlow1.init("resources/setup.properties");
@@ -97,6 +106,10 @@ public class UniversityLevelKeywordCloudGenerator {
 	public void runProcess() throws IOException, ParserConfigurationException, SAXException {
 		setLocalDirectories();
 		
+		for(String s: sw){
+			stopwords.add(s.toLowerCase());
+		}
+	
 		NFPersonArticles = new HashSet<String>();	
 		article2person = readArticle2PersonMapFile(ARTICLE_2_PERSON_MAP);
 		allkeywords = getLines(new File(ALL_KW_FILENAME));
@@ -134,10 +147,22 @@ public class UniversityLevelKeywordCloudGenerator {
 	private void computeWordCloudData(Map<String, Keyword> kwMap) throws JsonGenerationException, JsonMappingException, IOException {
 		List<Keyword> kwListByPersonCount = new ArrayList<Keyword>(kwMap.values());
 		Collections.sort(kwListByPersonCount, new Keyword.SortByPersonCount());
+		kwListByPersonCount = removeStopWords(stopwords, kwListByPersonCount);
 		List<Keyword> subKWListByPersonCount = kwListByPersonCount.subList(0, 300);
 		mapDataToJSON(subKWListByPersonCount, UNIVERISTY_KEYWORD_CLOUD);
 	}
 
+
+	private List<Keyword> removeStopWords(Set<String> stopwords2, List<Keyword> kwListByPersonCount) {
+		List<Keyword> newKWList = new ArrayList<Keyword>();
+		for(Keyword kw:kwListByPersonCount){
+			String k = kw.getKeyword();
+			if(!stopwords2.contains(k.toLowerCase())){
+				newKWList.add(kw);
+			}
+		}
+		return newKWList;
+	}
 
 	private Map<String, Keyword> getMeshTermToPersonMap(Set<Mesh> allMesh2, Map<String, Set<String>> articleMeshMap2,
 			Map<String, Set<Person>> article2person2) {
@@ -146,6 +171,9 @@ public class UniversityLevelKeywordCloudGenerator {
 
 		for(Mesh mesh: allMesh2){
 			String meshLabel = mesh.getMeshLabel();
+			if(meshLabel.equalsIgnoreCase("Animals")){
+				//System.out.println("got the mesh");
+			}
 			Set<String> listOfArticles = getArticleListForAMeshTerm(meshLabel, articleMeshMap2); 
 			if(listOfArticles.size() >0){
 				Set<Person> listOfPersons  = getPersonsListForAKeywordMesh(listOfArticles, article2person2);
@@ -171,6 +199,9 @@ public class UniversityLevelKeywordCloudGenerator {
 		Map<String, Keyword> keywordMap = new HashMap<String, Keyword>();
 
 		for(String keyword: allkeywords2){
+			if(keyword.equalsIgnoreCase("Animals")){
+			//	System.out.println("got the keyword");
+			}
 			Set<String> listOfArticles = getArticleListForAKeyword(keyword, articleKWMap2); 
 			if(listOfArticles.size() >0){
 				Set<Person> listOfPersons  = getPersonsListForAKeywordMesh(listOfArticles, article2person2);
@@ -255,28 +286,46 @@ public class UniversityLevelKeywordCloudGenerator {
 	}
 
 	private Map<String, Set<Person>> readArticle2PersonMapFile(String filePath) throws IOException {
-		Reader in;
 		Map<String, Set<Person>> map = new HashMap<String, Set<Person>>();
-		in = new FileReader(filePath);
-		Iterable<CSVRecord> records = null;
-		records = CSVFormat.EXCEL.withDelimiter(',').withQuote('"').parse(in);
-		for (CSVRecord record : records) {
-			String articleURI = record.get(0);
-			Person person = new Person();
-			String personURI = record.get(1);
-			String personName = getPersonName(record.get(2), record.get(3), record.get(4));
-			person.setPersonURI(personURI);
-			person.setPersonName(personName);
-			if(map.get(articleURI)!= null){
-				Set<Person> p = map.get(articleURI);
-				p.add(person);
-				map.put(articleURI, p);
-			}else{
-				Set<Person> p = new HashSet<Person>();
-				p.add(person);
-				map.put(articleURI, p);
+		BufferedReader br = null;
+		String line = "";
+		long lineCount = 0;
+		br = new BufferedReader(new FileReader(new File(filePath)));
+		while ((line = br.readLine()) != null) {
+			lineCount++;
+			if(line.trim().length() == 0) continue;
+			@SuppressWarnings("resource")
+			CSVReader reader = new CSVReader(new StringReader(line),',','\"');
+			String[] tokens;
+			while ((tokens = reader.readNext()) != null) {
+				try {
+					if (lineCount == 1) continue; // header line
+					
+					String articleURI = tokens[0];
+					Person person = new Person();
+					String personURI = tokens[1];
+					String personName = getPersonName(tokens[2], tokens[3], tokens[4]);
+					person.setPersonURI(personURI);
+					person.setPersonName(personName);
+					if(map.get(articleURI)!= null){
+						Set<Person> p = map.get(articleURI);
+						p.add(person);
+						map.put(articleURI, p);
+					}else{
+						Set<Person> p = new HashSet<Person>();
+						p.add(person);
+						map.put(articleURI, p);
+					}	
+				}catch (ArrayIndexOutOfBoundsException exp) {
+					for (String s : tokens) {
+						LOGGER.warning("ArrayIndexOutOfBoundsException: "+ lineCount+" :"+ s);
+					}
+					LOGGER.warning("\n");
+					continue;
+				}
 			}
 		}
+		br.close();
 		LOGGER.info("UNIV-LEVEL KEYWORD CLOUD: Article to Person Set Map size:"+ map.size());
 		return map;
 	}

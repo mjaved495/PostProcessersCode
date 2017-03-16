@@ -96,5 +96,62 @@ public class Keyword implements Comparable<Keyword>{
 			return kw2.getCountByPerson().compareTo(kw1.getCountByPerson());
 		}
 	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((countOfArticle == null) ? 0 : countOfArticle.hashCode());
+		result = prime * result + ((countOfPerson == null) ? 0 : countOfPerson.hashCode());
+		result = prime * result + ((dates == null) ? 0 : dates.hashCode());
+		result = prime * result + ((keyword == null) ? 0 : keyword.hashCode());
+		result = prime * result + ((persons == null) ? 0 : persons.hashCode());
+		result = prime * result + ((types == null) ? 0 : types.hashCode());
+		return result;
+	}
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Keyword other = (Keyword) obj;
+		if (countOfArticle == null) {
+			if (other.countOfArticle != null)
+				return false;
+		} else if (!countOfArticle.equals(other.countOfArticle))
+			return false;
+		if (countOfPerson == null) {
+			if (other.countOfPerson != null)
+				return false;
+		} else if (!countOfPerson.equals(other.countOfPerson))
+			return false;
+		if (dates == null) {
+			if (other.dates != null)
+				return false;
+		} else if (!dates.equals(other.dates))
+			return false;
+		if (keyword == null) {
+			if (other.keyword != null)
+				return false;
+		} else if (!keyword.equals(other.keyword))
+			return false;
+		if (persons == null) {
+			if (other.persons != null)
+				return false;
+		} else if (!persons.equals(other.persons))
+			return false;
+		if (types == null) {
+			if (other.types != null)
+				return false;
+		} else if (!types.equals(other.types))
+			return false;
+		return true;
+	}
+	
+	
+	
 	
 }
