@@ -5,6 +5,7 @@ public class Collaboration {
 	private String personURI1;
 	private String personName1;
 	
+	private String department2;
 	private String personURI2;
 	private String personName2;
 	
@@ -16,12 +17,15 @@ public class Collaboration {
 		
 	}
 	
-	public Collaboration(String department1, String personURI1, String personName1, String personURI2,
-			String personName2, String articleTitle, String articleURI, String date) {
+	public Collaboration(
+			String department1, String personURI1, String personName1, 
+			String department2, String personURI2, String personName2, 
+			String articleTitle, String articleURI, String date) {
 		super();
 		this.department1 = department1;
 		this.personURI1 = personURI1;
 		this.personName1 = personName1;
+		this.setDepartment2(department2);
 		this.personURI2 = personURI2;
 		this.personName2 = personName2;
 		this.articleTitle = articleTitle;
@@ -80,6 +84,14 @@ public class Collaboration {
 		this.articleTitle = articleTitle;
 	}
 
+	public String getDepartment2() {
+		return department2;
+	}
+
+	public void setDepartment2(String department2) {
+		this.department2 = department2;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -88,6 +100,7 @@ public class Collaboration {
 		result = prime * result + ((articleURI == null) ? 0 : articleURI.hashCode());
 		result = prime * result + ((date == null) ? 0 : date.hashCode());
 		result = prime * result + ((department1 == null) ? 0 : department1.hashCode());
+		result = prime * result + ((department2 == null) ? 0 : department2.hashCode());
 		result = prime * result + ((personName1 == null) ? 0 : personName1.hashCode());
 		result = prime * result + ((personName2 == null) ? 0 : personName2.hashCode());
 		result = prime * result + ((personURI1 == null) ? 0 : personURI1.hashCode());
@@ -123,6 +136,11 @@ public class Collaboration {
 			if (other.department1 != null)
 				return false;
 		} else if (!department1.equals(other.department1))
+			return false;
+		if (department2 == null) {
+			if (other.department2 != null)
+				return false;
+		} else if (!department2.equals(other.department2))
 			return false;
 		if (personName1 == null) {
 			if (other.personName1 != null)

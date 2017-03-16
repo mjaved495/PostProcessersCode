@@ -59,7 +59,6 @@ public static String date = null;
 	
 	
 	// INTERNAL COLLABORATIONS
-	public static String COLLAB_WHEEL_DATA_FOLDER = "collabwheel";
 	public static String ORG_ORGCODE_MAP_FILE = "org-orgcode-map.csv";
 	
 	

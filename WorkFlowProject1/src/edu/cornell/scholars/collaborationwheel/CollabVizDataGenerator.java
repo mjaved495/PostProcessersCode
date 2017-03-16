@@ -2,7 +2,6 @@ package edu.cornell.scholars.collaborationwheel;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.StringReader;
@@ -30,6 +29,7 @@ public class CollabVizDataGenerator {
 	
 	private Map<String, String> orgFullNameToCodeMap = null;
 	private Map<String, String> orgCodeToFullNameMap = null;
+	private Map<String, String> orgLocalNameToFullNameMap = null;
 	private Set<Collaboration> inputData = null;
 	
 	public static void main(String[] args) {
@@ -52,7 +52,8 @@ public class CollabVizDataGenerator {
 	private void readInputFiles(File folder) throws IOException {
 		File[] inputFiles = folder.listFiles();
 		for(File inputFile: inputFiles){
-			if(!inputFile.getName().endsWith(".csv")) continue;
+			if(!inputFile.getName().startsWith("interdept-") && 
+					!inputFile.getName().startsWith("crossunit-")) continue;
 			inputData = readInputFile(inputFile);
 			String outputFilePath = getOutputFilePath(inputFile);
 			processData(inputData, inputFile.getName(), outputFilePath);
@@ -66,8 +67,7 @@ public class CollabVizDataGenerator {
 	}
 
 	private void setLocalDirectories() {
-		QUERY_RESULT_FOLDER = Configuration.QUERY_RESULTSET_FOLDER +"/"+ Configuration.date 
-				+ "/" + Configuration.COLLAB_WHEEL_DATA_FOLDER;
+		QUERY_RESULT_FOLDER = Configuration.QUERY_RESULTSET_FOLDER +"/"+ Configuration.date;
 		ORGCODE_FILE = Configuration.SUPPL_FOLDER + "/"+ Configuration.ORG_ORGCODE_MAP_FILE;
 		OUTPUT_FOLDER = Configuration.POSTPROCESS_RESULTSET_FOLDER+"/"+Configuration.date+"/"+Configuration.COLLABORATION_FOLDER+"/"+Configuration.COLLAB_INTERNAL_FOLDER;
 	}
@@ -82,9 +82,14 @@ public class CollabVizDataGenerator {
 	private void processData(Set<Collaboration> data, String inputFileName, String outputFilePath) throws JsonGenerationException, JsonMappingException, IOException {
 		College college = new College();
 		
-		college.setName(getCollegeCode(inputFileName).toUpperCase());
 		college.setDescription(getFullCollegeName(inputFileName));
-		processACollege(college, data);
+		college.setName(orgFullNameToCodeMap.get(getFullCollegeName(inputFileName).toLowerCase()));
+		
+		boolean isCrossUnit = false;
+		if(inputFileName.startsWith("crossunit")){
+			isCrossUnit = true;
+		}
+		processACollege(college, data, isCrossUnit);
 		if(college.getChildren() != null && college.getChildren().size() > 0){
 			createJSONData(college, outputFilePath);
 		}
@@ -93,24 +98,28 @@ public class CollabVizDataGenerator {
 	}
 	
 	private String getFullCollegeName(String inputFileName) {
-		return orgCodeToFullNameMap.get(getCollegeCode(inputFileName)) ;
-	}
-	private String getCollegeCode(String inputFileName) {
-		return inputFileName.substring(inputFileName.indexOf("-")+1, inputFileName.indexOf("."));
+		return orgLocalNameToFullNameMap.get(
+				inputFileName.substring(inputFileName.indexOf("-")+1, inputFileName.indexOf(".")));
 	}
 
-	private void processACollege(College college, Set<Collaboration> data){
+	private void processACollege(College college, Set<Collaboration> data, boolean isCrossUnit){
+		Set<String> notFoundDepartments = new HashSet<String>();
 		Department d = null;
 		PersonCollaborator1 p1 = null;
 		PersonCollaborator2 p2 = null;
 		for(Collaboration collab: data){
-			String department = collab.getDepartment1();
+			String department = null;
+			if(isCrossUnit){
+				department = collab.getDepartment2();
+			}else{
+				department = collab.getDepartment1();
+			}
+			
 			d = college.getDepartment(department);
 			if(d == null){ // creating new department
 				d = createNewDepartment(department);
-				
 				if(d == null) {
-					LOGGER.severe("No Org code found for "+ department +"...returning");
+					notFoundDepartments.add(department);
 					continue;
 				}
 				college.addDepartment(d);
@@ -119,14 +128,14 @@ public class CollabVizDataGenerator {
 			String person1 = collab.getPersonName1();
 			p1 = d.getPersonCollaborator1(person1);
 			if(p1 == null){ // creating new personCollaborator1
-				p1 = createNewPersonCollaborator1(person1, college.getName());
+				p1 = createNewPersonCollaborator1(person1, collab.getDepartment1());
 				d.addPersonCollaborator1(p1);
 			}
 			// personCollaborator1 exists
 			String person2 = collab.getPersonName2();
 			p2 = p1.getPersonCollaborator2(person2);
 			if(p2 == null){  // creating new personCollaborator2
-				p2 = createNewPersonCollaborator2(person2, d.getName());
+				p2 = createNewPersonCollaborator2(person2, collab.getDepartment2());
 				p1.addPersonCollaborator2(p2);
 			}
 			// personCollaborator2 exists
@@ -140,20 +149,23 @@ public class CollabVizDataGenerator {
 			p2.addArticle(art);
 			p2.setSize(p2.getPubs().size());
 		}
+		for(String dept: notFoundDepartments){
+			LOGGER.severe("No Org code found for "+ dept +".....");
+		}
 	}
-	private PersonCollaborator2 createNewPersonCollaborator2(String person2, String orgCode) {
+	private PersonCollaborator2 createNewPersonCollaborator2(String person2, String dept) {
 		PersonCollaborator2 p = new PersonCollaborator2();
 		p.setName(person2);
 		p.setDescription(person2);
-		p.setOrgCode(orgCode);
+		p.setOrgCode(getCode(dept));
 		p.setSize(1);
 		return p;
 	}
-	private PersonCollaborator1 createNewPersonCollaborator1(String person1, String orgCode) {
+	private PersonCollaborator1 createNewPersonCollaborator1(String person1, String dept) {
 		PersonCollaborator1 p = new PersonCollaborator1();
 		p.setName(person1);
 		p.setDescription(person1);
-		p.setOrgCode(orgCode);
+		p.setOrgCode(getCode(dept));
 		return p;
 	}
 	private Department createNewDepartment(String department) {
@@ -181,21 +193,21 @@ public class CollabVizDataGenerator {
 		br = new BufferedReader(new FileReader(inputFile));
 		while ((line = br.readLine()) != null) {
 			lineCount++;
-			
-			@SuppressWarnings("resource")
 			CSVReader reader = new CSVReader(new StringReader(line),',','\"');
 			String[] tokens;
 			while ((tokens = reader.readNext()) != null) {
 				try {
+					if(lineCount == 1) continue;  // header row
 					String dept1 = tokens[0].trim();
 					String perURI1 = tokens[1].trim();
 					String perName1 = tokens[2].trim();
-					String perURI2 = tokens[3].trim();
-					String perName2 = tokens[4].trim();
-					String articleTitle = tokens[5].trim();
-					String articleURI = tokens[6].trim();
-					String date = tokens[7].trim();
-					Collaboration collab = new Collaboration(dept1, perURI1, perName1, perURI2,
+					String dept2 = tokens[3].trim();
+					String perURI2 = tokens[4].trim();
+					String perName2 = tokens[5].trim();
+					String articleTitle = tokens[6].trim();
+					String articleURI = tokens[7].trim();
+					String date = tokens[8].trim();
+					Collaboration collab = new Collaboration(dept1, perURI1, perName1, dept2, perURI2,
 							perName2, articleTitle, articleURI, date);
 					set.add(collab);			
 				}catch (ArrayIndexOutOfBoundsException exp) {
@@ -211,25 +223,40 @@ public class CollabVizDataGenerator {
 		LOGGER.info("read set size: "+ set.size());
 		return set;
 	}
-	private Map<String, String> readOrgCodeMapFile(File file) {
+	@SuppressWarnings("resource")
+	private Map<String, String> readOrgCodeMapFile(File file) throws IOException {
 		Map<String, String> map  = new HashMap<String, String>();
 		orgCodeToFullNameMap =  new HashMap<String, String>();
-		
-		CSVReader reader;
-		try {
-			reader = new CSVReader(new FileReader(file),',','\"');
-			String [] nextLine = null;	
-			while ((nextLine = reader.readNext()) != null) {
-				if(!nextLine[0].trim().isEmpty() && !nextLine[1].trim().isEmpty()){
-					map.put(nextLine[0].trim().toLowerCase(), nextLine[1].trim());
-					orgCodeToFullNameMap.put(nextLine[1].trim().toLowerCase(), nextLine[0].trim());
+		orgLocalNameToFullNameMap = new HashMap<String, String>();
+		BufferedReader br = null;
+		String line = "";
+		long lineCount = 0;
+		br = new BufferedReader(new FileReader(file));
+		while ((line = br.readLine()) != null) {
+			lineCount++;
+			if (lineCount == 1) continue; // header line
+			CSVReader reader = new CSVReader(new StringReader(line),',','\"');
+			String[] tokens;
+			while ((tokens = reader.readNext()) != null) {
+				try {
+					if(!tokens[0].trim().isEmpty() && !tokens[1].trim().isEmpty()){
+						map.put(tokens[0].trim().toLowerCase(), tokens[1].trim());
+						orgCodeToFullNameMap.put(tokens[1].trim().toLowerCase(), tokens[0].trim());
+					}
+					if(!tokens[2].trim().isEmpty()){
+						String localname = tokens[2].substring(tokens[2].lastIndexOf("/")+1);
+						orgLocalNameToFullNameMap.put(localname, tokens[0].trim());
+					}
+				}catch (ArrayIndexOutOfBoundsException exp) {
+					for (String s : tokens) {
+						LOGGER.warning("ArrayIndexOutOfBoundsException: "+ lineCount+" :"+ s);
+					}
+					LOGGER.warning("\n");
+					continue;
 				}
 			}
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
 		}
+		LOGGER.info("org code file line count "+ lineCount);
 		return map;
 	}
 	private void createJSONData(College colleges2, String outputfilePath) throws JsonGenerationException, JsonMappingException, IOException {
