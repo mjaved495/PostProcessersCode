@@ -128,14 +128,14 @@ public class CollabVizDataGenerator {
 			String person1 = collab.getPersonName1();
 			p1 = d.getPersonCollaborator1(person1);
 			if(p1 == null){ // creating new personCollaborator1
-				p1 = createNewPersonCollaborator1(person1, collab.getDepartment1());
+				p1 = createNewPersonCollaborator1(person1, collab);
 				d.addPersonCollaborator1(p1);
 			}
 			// personCollaborator1 exists
 			String person2 = collab.getPersonName2();
 			p2 = p1.getPersonCollaborator2(person2);
 			if(p2 == null){  // creating new personCollaborator2
-				p2 = createNewPersonCollaborator2(person2, collab.getDepartment2());
+				p2 = createNewPersonCollaborator2(person2, collab);
 				p1.addPersonCollaborator2(p2);
 			}
 			// personCollaborator2 exists
@@ -153,19 +153,21 @@ public class CollabVizDataGenerator {
 			LOGGER.severe("No Org code found for "+ dept +".....");
 		}
 	}
-	private PersonCollaborator2 createNewPersonCollaborator2(String person2, String dept) {
+	private PersonCollaborator2 createNewPersonCollaborator2(String person2, Collaboration col) {
 		PersonCollaborator2 p = new PersonCollaborator2();
 		p.setName(person2);
 		p.setDescription(person2);
-		p.setOrgCode(getCode(dept));
+		p.setOrgCode(getCode(col.getDepartment2()));
+		p.setUri(col.getPersonURI2());
 		p.setSize(1);
 		return p;
 	}
-	private PersonCollaborator1 createNewPersonCollaborator1(String person1, String dept) {
+	private PersonCollaborator1 createNewPersonCollaborator1(String person1, Collaboration col) {
 		PersonCollaborator1 p = new PersonCollaborator1();
 		p.setName(person1);
 		p.setDescription(person1);
-		p.setOrgCode(getCode(dept));
+		p.setOrgCode(getCode(col.getDepartment1()));
+		p.setUri(col.getPersonURI1());
 		return p;
 	}
 	private Department createNewDepartment(String department) {
@@ -234,7 +236,6 @@ public class CollabVizDataGenerator {
 		br = new BufferedReader(new FileReader(file));
 		while ((line = br.readLine()) != null) {
 			lineCount++;
-			if (lineCount == 1) continue; // header line
 			CSVReader reader = new CSVReader(new StringReader(line),',','\"');
 			String[] tokens;
 			while ((tokens = reader.readNext()) != null) {

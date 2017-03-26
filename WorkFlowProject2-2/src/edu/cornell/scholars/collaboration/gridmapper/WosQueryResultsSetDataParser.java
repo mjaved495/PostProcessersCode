@@ -94,9 +94,9 @@ public class WosQueryResultsSetDataParser {
 				//printSingleEntry(each);
 				String title = each[8]; // for error print only
 				String t = each[8];			// index 8: Title
-//				if(title.contains("Droplet combustion characteristics of algae-derived renewable diesel")){
-//					System.out.println(title);
-//				}
+				if(title.contains("Isotope constraints on brine formation in closed basin salars, NW Argentina")){
+					//System.out.println(title);
+				}
 				String journal = each[9];		// index 9: Journa	
 				String language =each[12];
 				String type = each[13];			// index 13: Type of work.

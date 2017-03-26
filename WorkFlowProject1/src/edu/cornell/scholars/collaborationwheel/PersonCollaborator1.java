@@ -8,6 +8,7 @@ public class PersonCollaborator1 {
 	private String name;
 	private String description;
 	private String orgCode;
+	private String uri;
 	private Set<PersonCollaborator2> children;
 
 
@@ -110,6 +111,14 @@ public class PersonCollaborator1 {
 
 	public void setOrgCode(String orgCode) {
 		this.orgCode = orgCode;
+	}
+
+	public String getUri() {
+		return uri;
+	}
+
+	public void setUri(String uri) {
+		this.uri = uri;
 	}
 
 

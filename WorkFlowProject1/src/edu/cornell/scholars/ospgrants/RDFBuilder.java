@@ -80,6 +80,11 @@ public class RDFBuilder {
 
 	public void runProcess() throws NoSuchAlgorithmException, IOException {
 		setLocalDirectories();
+		if(!new File(INPUT_TXT_FILE).exists()){
+			LOGGER.info("GRANTS: AwdInv-all.txt does not exists....RETURINING.");
+			return;
+		}
+		
 		generateRDF(INPUT_TXT_FILE, OUTPUT_NT_FILE);
 	}
 

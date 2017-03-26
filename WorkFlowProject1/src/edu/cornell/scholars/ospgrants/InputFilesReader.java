@@ -82,10 +82,15 @@ public class InputFilesReader {
 	public void runProcess() throws IOException, ParserConfigurationException, SAXException{
 		setLocalDirectories();
 
-		existingGrants = readAllGrantsFile(ALL_GRANTS_FILE);  // All grants that exists in the triple store
-
+		if(!new File(INPUT_AWRAD_FILENAME).exists() || !new File(INPUT_INVESTIGATOR_FILENAME).exists()){
+			LOGGER.info("GRANTS: Grants Input files do not exist.... RETURNING");
+			return;
+		}
+		
 		AwardsDataReader obj1 = new AwardsDataReader();
 		awd_entries = obj1.loadAwardData(new File(INPUT_AWRAD_FILENAME));  // Grants file that retrieved from OSP
+		
+		existingGrants = readAllGrantsFile(ALL_GRANTS_FILE);  // All grants that exists in the triple store
 
 		awd_entries = getNewAwardsOnly(awd_entries, existingGrants);
 

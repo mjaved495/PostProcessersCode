@@ -7,6 +7,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -106,6 +107,12 @@ public class AffiliationDataAnalyzerExternal {
 			subjectAreas = subareaMap.get(scholarsURI.trim());
 		}
 		String articleTitle = entry.getTitle();
+		
+		if(articleTitle.equalsIgnoreCase("Private Forest Landowners: Estimating Population Parameters")){
+			System.out.println("article found");
+		}
+		
+		
 		String year = entry.getYear();
 		for(Iterator<Article_TSV> i = article.iterator(); i.hasNext();){
 			Article_TSV en = i.next();
@@ -195,9 +202,14 @@ public class AffiliationDataAnalyzerExternal {
 			String stateName = list.get(index);
 			if(entry.length() >= 15){
 				entry = entry.substring(entry.length()-15);
-				if(entry.toUpperCase().contains(stateName)){
-					return stateName;
+				entry = entry.replaceAll(",", " ");
+				String ent[] = entry.split(" ");
+				for(String e: ent){
+					if(e.trim().toUpperCase().equals(stateName)){
+						return stateName;
+					}
 				}
+				
 			}
 		}
 		LOGGER.warning("USA State not found: "+entry);
@@ -212,7 +224,9 @@ public class AffiliationDataAnalyzerExternal {
 		for(int index=0;index<countryList.size();index++){
 			String countryName = countryList.get(index);
 			try{
-				entry = entry.toUpperCase().substring(entry.length()-15);
+				if(entry.length() > 15){
+					entry = entry.toUpperCase().substring(entry.length()-15);
+				}
 			}catch(Exception e){
 				//System.out.println(entry);
 				e.printStackTrace();
@@ -261,23 +275,39 @@ public class AffiliationDataAnalyzerExternal {
 	
 	public static List<ArticleToIdMap> readArtile2IdMapFile(String filePath) {
 		List<ArticleToIdMap> list = new ArrayList<ArticleToIdMap>();
-		CSVReader reader;
+		BufferedReader br = null;
+		String line = "";
 		try {
-			reader = new CSVReader(new FileReader(new File(filePath)),',','\"');
-			String [] nextLine;	
+			br = new BufferedReader(new FileReader(new File(filePath)));
 			ArticleToIdMap obj  = null;
-			while ((nextLine = reader.readNext()) != null) {
-				if(!nextLine[1].trim().isEmpty() ||  !nextLine[2].trim().isEmpty()){
-					obj = new ArticleToIdMap();
-					obj.setArticleURI(nextLine[0].trim());
-					obj.setWosId(nextLine[1].trim());
-					obj.setPubmedId(nextLine[2].trim());
-					list.add(obj);
-				}	
+			while ((line = br.readLine()) != null) {
+				CSVReader reader = new CSVReader(new StringReader(line),',','\"');	
+				String[] tokens;
+				while ((tokens = reader.readNext()) != null) {
+					if(!tokens[1].trim().isEmpty() || !tokens[2].trim().isEmpty()){  // stop if wos and pmid both are empty
+						obj = new ArticleToIdMap();
+						obj.setArticleURI(tokens[0].trim());
+						obj.setWosId(tokens[1].trim());
+						obj.setPubmedId(tokens[2].trim());
+						list.add(obj);
+					}	
+				}
+				reader.close();
 			}
+		}catch (FileNotFoundException e) {
+			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
+		} finally {
+			if (br != null) {
+				try {
+					br.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
 		}
+		System.out.println("article to id map"+ list.size());
 		return list;
 	}
 	

@@ -88,7 +88,7 @@ public class WOSDataFileReaderGRIDMapper {
 		Set<String> grid = map.keySet();
 
 		for(String a: affiliationSet){
-			if(a.contains("Ohio")){
+			if(a.contains("SUNY Binghamton")){
 				//System.out.println(a);
 			}	
 			String affiliation = a;
@@ -164,7 +164,9 @@ public class WOSDataFileReaderGRIDMapper {
 		String regex1 = ".*[A-Z]{2} [0-9]{5}$";
 		String regex2 = ".*[A-Z]{2}$";
 		if(Pattern.matches(regex1, entry) || Pattern.matches(regex2, entry)){
-			entry = entry.substring(entry.length()-15);
+			if(entry.length()>15){
+				entry = entry.substring(entry.length()-15);
+			}
 			for(String state: stateList){
 				if(entry.contains(state)){
 					return true;

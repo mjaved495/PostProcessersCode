@@ -9,6 +9,8 @@ public class PersonCollaborator2 {
 	private String description;
 	private String orgCode;
 	private Set<Article> pubs;
+	private String uri;
+	
 	public Set<Article> getPubs() {
 		return pubs;
 	}
@@ -111,6 +113,14 @@ public class PersonCollaborator2 {
 
 	public void setOrgCode(String orgCode) {
 		this.orgCode = orgCode;
+	}
+
+	public String getUri() {
+		return uri;
+	}
+
+	public void setUri(String uri) {
+		this.uri = uri;
 	}
 	
 	

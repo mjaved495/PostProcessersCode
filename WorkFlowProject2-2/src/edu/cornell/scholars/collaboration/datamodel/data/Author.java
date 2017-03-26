@@ -19,52 +19,11 @@ public class Author {
 			String state, Set<String> cornellAffiliation) {
 		super();
 		this.authorName = authorName;
-		this.setAuthorURI(authorURI);
-		this.authorAffiliation = authorAffiliation;
-		this.country = country;
-		this.state = state;
-		this.cornellAffiliation = cornellAffiliation;
-	}
-
-	public String getAuthorName() {
-		return authorName;
-	}
-	public void setAuthorName(String authorName) {
-		this.authorName = authorName;
-	}
-	public AuthorAffiliation getAuthorAffiliation() {
-		return authorAffiliation;
-	}
-	public void setAuthorAffiliation(AuthorAffiliation authorAffiliation) {
-		this.authorAffiliation = authorAffiliation;
-	}
-	public String getCountry() {
-		return country;
-	}
-	public void setCountry(String country) {
-		this.country = country;
-	}
-	public Set<String> getCornellAffiliation() {
-		return cornellAffiliation;
-	}
-	public void setCornellAffiliation(Set<String> cornellAffiliation) {
-		this.cornellAffiliation = cornellAffiliation;
-	}
-
-	public String getState() {
-		return state;
-	}
-
-	public void setState(String state) {
-		this.state = state;
-	}
-
-	public String getAuthorURI() {
-		return authorURI;
-	}
-
-	public void setAuthorURI(String authorURI) {
 		this.authorURI = authorURI;
+		this.authorAffiliation = authorAffiliation;
+		this.country = country;
+		this.state = state;
+		this.cornellAffiliation = cornellAffiliation;
 	}
 
 	@Override
@@ -122,5 +81,53 @@ public class Author {
 		return true;
 	}
 
+	public String getAuthorName() {
+		return authorName;
+	}
 
+	public void setAuthorName(String authorName) {
+		this.authorName = authorName;
+	}
+
+	public String getAuthorURI() {
+		return authorURI;
+	}
+
+	public void setAuthorURI(String authorURI) {
+		this.authorURI = authorURI;
+	}
+
+	public AuthorAffiliation getAuthorAffiliation() {
+		return authorAffiliation;
+	}
+
+	public void setAuthorAffiliation(AuthorAffiliation authorAffiliation) {
+		this.authorAffiliation = authorAffiliation;
+	}
+
+	public String getCountry() {
+		return country;
+	}
+
+	public void setCountry(String country) {
+		this.country = country;
+	}
+
+	public String getState() {
+		return state;
+	}
+
+	public void setState(String state) {
+		this.state = state;
+	}
+
+	public Set<String> getCornellAffiliation() {
+		return cornellAffiliation;
+	}
+
+	public void setCornellAffiliation(Set<String> cornellAffiliation) {
+		this.cornellAffiliation = cornellAffiliation;
+	}
+
+	
 }

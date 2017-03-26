@@ -1,11 +1,13 @@
 package edu.cornell.scholars.collaboration.harvester;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.StringReader;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -59,21 +61,38 @@ public class ScholarsArticleDataReader {
 	private Map<String, String> readAllArticleIdFile(String filePath) throws IOException {
 		LOGGER.info("COLLAB1: reading all article file....");
 		Map<String, String>  currentIdsMap = new HashMap<String, String>();
-		CSVReader reader;
-		reader = new CSVReader(new FileReader(new File(filePath)),',','\"');
-		String [] nextLine;	
-		while ((nextLine = reader.readNext()) != null) {
-			if(!nextLine[1].trim().isEmpty() ||  !nextLine[2].trim().isEmpty()){
-				String wosId = nextLine[1].trim();
-				String pubmedId = nextLine[2].trim();
-				if(!wosId.isEmpty()){
-					currentIdsMap.put(wosId, "Web of Science (Lite)");
-				}else if(!pubmedId.isEmpty()){
-					currentIdsMap.put(pubmedId, "PubMed");
+		BufferedReader br = null;
+		String line = "";
+		long lineCount = 0;
+		br = new BufferedReader(new FileReader(new File(filePath)));
+		while ((line = br.readLine()) != null) {
+			lineCount++;
+			if(lineCount == 1 || line.trim().isEmpty()) continue; //header or empty line
+			//CSVReader reader = new CSVReader(new StringReader(line),'|');	
+			CSVReader reader = new CSVReader(new StringReader(line),',','\"');
+			String[] nextLine;
+			while ((nextLine = reader.readNext()) != null) {
+				try {
+					if(!nextLine[1].trim().isEmpty() ||  !nextLine[2].trim().isEmpty()){
+						String wosId = nextLine[1].trim();
+						String pubmedId = nextLine[2].trim();
+						if(!wosId.isEmpty()){
+							currentIdsMap.put(wosId, "Web of Science (Lite)");
+						}else if(!pubmedId.isEmpty()){
+							currentIdsMap.put(pubmedId, "PubMed");
+						}
+					}	
+				}catch (ArrayIndexOutOfBoundsException exp) {
+					LOGGER.warning(exp.getMessage());
+					for (String s : nextLine) {
+						LOGGER.info("ArrayIndexOutOfBoundsException: "+ lineCount+" :"+ s);
+					}
+					continue;
 				}
-			}	
+			}
+			reader.close();
 		}
-		reader.close();
+		br.close();
 		LOGGER.info("COLLAB1: reading all article file....completed");
 		LOGGER.info("COLLAB1: all article size:"+ currentIdsMap.size());
 		return currentIdsMap;

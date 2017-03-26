@@ -90,8 +90,6 @@ public class GlobalCollaborationHarvesterEntryPoint {
 		/**
 		 * save the identified global collaboration data is json
 		 */
-		//aff_analyzer.saveGlobaleCollaborations(GLOBAL_COLLAB_JSON);
-		
 		aff_analyzer.saveGlobalCollaborations(GLOBAL_COLLAB_STATE_JSON, GLOBAL_COLLAB_COUNTRY_JSON);
 		
 	}
@@ -108,6 +106,7 @@ public class GlobalCollaborationHarvesterEntryPoint {
 				String[] tokens;
 				count++;
 				while ((tokens = reader.readNext()) != null) {
+					if(count == 1) continue; // header row.
 					String name = tokens[0].trim();
 					String netId = tokens[1].trim();
 					String articleURI = tokens[2].trim();
@@ -154,6 +153,7 @@ public class GlobalCollaborationHarvesterEntryPoint {
 				String[] tokens;
 				count++;
 				while ((tokens = reader.readNext()) != null) {
+					if(count == 1) continue; // header row.
 					String subAreas[]= tokens[1].trim().split(";;");
 					Set<String> set = new HashSet<String>();
 					for(String sa: subAreas){
