@@ -186,6 +186,7 @@ public class InputFilesReader {
 			Award award = awd_entries2.get(prjId);
 			if(award == null) continue;
 			Investigator investigator = inv_entries2.get(inv);
+			//System.out.println(investigator.getINVPROJ_INVESTIGATOR_NETID());
 			Person_NetIdDeptMap entity = findMappedPerson(list, investigator.getINVPROJ_INVESTIGATOR_NETID()); 
 			if(entity == null) continue ;  // no investigator found
 			// Mapping the Department coming from the OSP Feed.
@@ -261,10 +262,10 @@ public class InputFilesReader {
 			Person_NetIdDeptMap obj  = null;
 			while ((nextLine = reader.readNext()) != null) {
 				obj = new Person_NetIdDeptMap();
-				obj.setNetId(nextLine[0].trim());
-				obj.setPersonURI(nextLine[1].trim());
-				obj.setDept(nextLine[2].trim());
-				obj.setDeptURI(nextLine[3].trim());
+				obj.setNetId(nextLine[1].trim());
+				obj.setPersonURI(nextLine[2].trim());
+				obj.setDept(nextLine[3].trim());
+				//obj.setDeptURI(nextLine[3].trim());
 				obj.setCollege(nextLine[4].trim());
 				list.add(obj);
 			}
