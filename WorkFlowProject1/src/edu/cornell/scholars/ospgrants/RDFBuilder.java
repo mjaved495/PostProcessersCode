@@ -225,7 +225,7 @@ public class RDFBuilder {
 				endDTV.addProperty(vivodateTimePrecision, YEAR_PRECISION);
 				Calendar endCal = Calendar.getInstance();
 				//"2011-09-01T00:00:00"^^<http://www.w3.org/2001/XMLSchema#dateTime>
-				endCal.set(Integer.parseInt(obj.getEndDate()), 12, 31, 0, 0, 0);
+				endCal.set(Integer.parseInt(obj.getEndDate()), 11, 31, 0, 0, 0);
 				Literal endValue = model.createTypedLiteral(endCal);
 				endDTV.addProperty(vivodateTime, endValue);
 				dti.addProperty(vivoEnd, endDTV);
