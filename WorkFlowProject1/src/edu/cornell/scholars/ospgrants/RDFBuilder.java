@@ -31,6 +31,7 @@ import org.apache.jena.vocabulary.RDFS;
 import com.opencsv.CSVReader;
 
 import edu.cornell.scholars.config.Configuration;
+import edu.cornell.scholars.workflow1.MainEntryPoint_WorkFlow1;
 
 
 public class RDFBuilder {
@@ -60,6 +61,7 @@ public class RDFBuilder {
 	public static void main(String[] args) {
 		RDFBuilder builder = new RDFBuilder();
 		try {
+			MainEntryPoint_WorkFlow1.init("resources/setup.properties"); 
 			builder.runProcess();
 		} catch (NoSuchAlgorithmException | IOException e) {
 			e.printStackTrace();
