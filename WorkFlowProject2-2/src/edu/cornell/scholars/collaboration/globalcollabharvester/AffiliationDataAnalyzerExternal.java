@@ -231,6 +231,9 @@ public class AffiliationDataAnalyzerExternal {
 				//System.out.println(entry);
 				e.printStackTrace();
 			}
+			
+			entry = replaceTermsForMapping(entry); // for example map England/Wales/Scotland to "United Kingdom"
+			
 			if(entry.contains(countryName)){
 				return countryName;
 			}
@@ -238,6 +241,12 @@ public class AffiliationDataAnalyzerExternal {
 		return null;
 	}
 		
+	private String replaceTermsForMapping(String entry) {
+		entry = entry.replaceAll("ENGLAND|WALES|NORTH IRELAND|SCOTLAND", "UNITED KINGDOM");
+		
+		return entry;
+	}
+
 	private String getScholarsURI(String id) {
 		return id2uriMap.get(id);
 	}
