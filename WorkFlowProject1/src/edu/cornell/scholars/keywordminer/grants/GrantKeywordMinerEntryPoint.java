@@ -61,6 +61,9 @@ public class GrantKeywordMinerEntryPoint {
 	private Map<String, Set<String>> grantMeshMap = new HashMap<String, Set<String>>();
 	private Map<String, Set<String>> grantKWMap = new HashMap<String, Set<String>>();
 
+	private Set<String> stopWords = new HashSet<String>();
+	private String stopWordArray[] = {"Use", "Its"};
+	
 	public static void main(String[] args) {
 		try {
 			MainEntryPoint_WorkFlow1.init("resources/setup.properties");
@@ -94,6 +97,9 @@ public class GrantKeywordMinerEntryPoint {
 
 	public void runProcess() throws IOException, ParserConfigurationException, SAXException {
 		setLocalDirectories();
+		
+		stopWords = getStopWordList(stopWordArray);
+		
 		grant_rows = readGrantMapFile(new File(GRANT_FILENAME));
 		Set<String> grantURIs = readMasterGrantFile(new File(KWMINER_GRANTID_MASTER_FILENAME));
 		List<GrantEntries> newGrant_rows = filterNewGrants(grant_rows, grantURIs);
@@ -113,6 +119,14 @@ public class GrantKeywordMinerEntryPoint {
 		saveDataInARDF(grantDataMap, GRANT_MAP_NTDATA_FILEPATH);
 		
 		updateMasterFile(newGrant_rows, new File(KWMINER_GRANTID_MASTER_FILENAME));
+	}
+	
+	private Set<String> getStopWordList(String[] stopWordArray2) {
+		Set<String> set = new HashSet<String>();
+		for(String stopWord : stopWordArray2){
+			set.add(stopWord);
+		}
+		return set;
 	}
 	
 	private void updateMasterFile(List<GrantEntries> newGrant_rows, File masterFile) throws IOException {
@@ -235,6 +249,9 @@ public class GrantKeywordMinerEntryPoint {
 			UCKeywords.add(keyword.toUpperCase());
 		}
 		for(String titleString : titleStrings){
+			
+			if(!stopWords.contains(titleString)) continue; // DO NOT PROCESS STOP WORDS
+			
 			if(UCKeywords.contains(titleString.toUpperCase())){
 				//System.out.println(titleString+" found in the keywords list.");	
 				Set<String> existingKW = grantKWMap.get(uri);

@@ -34,7 +34,6 @@ import org.xml.sax.SAXException;
 import com.opencsv.CSVReader;
 
 import edu.cornell.scholars.config.Configuration;
-import edu.cornell.scholars.keywordminer.grants.GrantEntries;
 import edu.cornell.scholars.workflow1.MainEntryPoint_WorkFlow1;
 
 public class ArticleKeywordMinerEntryPoint {
@@ -64,6 +63,9 @@ public class ArticleKeywordMinerEntryPoint {
 
 	private Map<String, Set<String>> articleMeshMap = new HashMap<String, Set<String>>();
 	private Map<String, Set<String>> articleKWMap = new HashMap<String, Set<String>>();
+
+	private Set<String> stopWords = new HashSet<String>();
+	private String stopWordArray[] = {"Use", "Its"};
 
 	public static void main(String[] args) {
 		try {
@@ -105,6 +107,9 @@ public class ArticleKeywordMinerEntryPoint {
 
 	public void runProcess() throws IOException, ParserConfigurationException, SAXException {
 		setLocalDirectories();
+
+		stopWords = getStopWordList(stopWordArray);
+
 		article_rows = readArticleMapFile(new File(ARTICLE_FILENAME));
 		Set<String> articleURIs = readMasterArticleFile(new File(KWMINER_ARTICLEID_MASTER_FILENAME));
 		List<ArticleEntries> newArticles_rows = filterNewArticles(article_rows, articleURIs);
@@ -125,6 +130,14 @@ public class ArticleKeywordMinerEntryPoint {
 		saveDataInARDF(articleDataMap, ARTICLE_MAP_NTDATA_FILEPATH);
 
 		updateMasterFile(newArticles_rows, new File(KWMINER_ARTICLEID_MASTER_FILENAME));
+	}
+
+	private Set<String> getStopWordList(String[] stopWordArray2) {
+		Set<String> set = new HashSet<String>();
+		for(String stopWord : stopWordArray2){
+			set.add(stopWord);
+		}
+		return set;
 	}
 
 	private void updateMasterFile(List<ArticleEntries> newArticles_rows, File masterFile) throws IOException {
@@ -247,6 +260,9 @@ public class ArticleKeywordMinerEntryPoint {
 			UCKeywords.add(keyword.toUpperCase());
 		}
 		for(String titleString : titleStrings){
+			
+			if(!stopWords.contains(titleString)) continue; // DO NOT PROCESS STOP WORDS
+			
 			if(UCKeywords.contains(titleString.toUpperCase())){
 				//System.out.println(titleString+" found in the keywords list.");	
 				Set<String> existingKW = articleKWMap.get(uri);
