@@ -7,7 +7,6 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.io.Reader;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -19,8 +18,6 @@ import java.util.logging.Logger;
 
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVRecord;
 import org.xml.sax.SAXException;
 
 import com.opencsv.CSVReader;
@@ -70,9 +67,9 @@ public class InputFilesReader {
 				Configuration.OSP_INV_FILENAME;		
 		PERSON_NETID_DEPT_MAPPER_FILENAME = Configuration.QUERY_RESULTSET_FOLDER + "/" + Configuration.date + "/"+
 				Configuration.PERSON_2_DEPT_UNIT_MAP_FILENAME;
-		DEPARTMENT_MAPPER_FILENAME = Configuration.SUPPL_FOLDER + "/" + Configuration.OSP_ADMNDEPT_FILENAME;
 		ALL_GRANTS_FILE = Configuration.QUERY_RESULTSET_FOLDER + "/" + Configuration.date + "/"+
 				Configuration.ALL_GRANTS_FILENAME;
+		DEPARTMENT_MAPPER_FILENAME = Configuration.SUPPL_FOLDER + "/" + Configuration.OSP_ADMNDEPT_FILENAME;
 
 		//output file names
 		OUTPUT_TXT_FILE = Configuration.POSTPROCESS_RESULTSET_FOLDER + "/" + Configuration.date +"/"+ 
