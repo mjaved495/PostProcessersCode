@@ -320,7 +320,7 @@ public class ArticleKeywordMinerEntryPoint {
 		printWriter.close();
 	}
 
-	private static Map<String, ArticleEntriesData> createArticleMapOfEntries(List<ArticleEntries> article_rows) {
+	private Map<String, ArticleEntriesData> createArticleMapOfEntries(List<ArticleEntries> article_rows) {
 		Map<String, ArticleEntriesData> map = new HashMap<String, ArticleEntriesData>();
 		for(int index=0; index<article_rows.size();index++){
 			ArticleEntries obj = article_rows.get(index);
@@ -334,12 +334,16 @@ public class ArticleKeywordMinerEntryPoint {
 				if(obj.getArticleAbstract() != null){
 					Set<String> abstractWords = getWords(obj.getArticleAbstract());
 					for(String word: abstractWords){
-						data.addTitlewords(word); 
+						if(!stopWords.contains(word)){
+							data.addTitlewords(word); 
+						}
 					}
 				}
 				Set<String> words = getWords(title);
 				for(String word: words){
-					data.addTitlewords(word); 
+					if(!stopWords.contains(word)){
+						data.addTitlewords(word); 
+					}
 				}
 				map.put(articleURI, data);
 			}
