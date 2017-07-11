@@ -131,7 +131,7 @@ public class GrantKeywordMinerEntryPoint {
 	
 	private void updateMasterFile(List<GrantEntries> newGrant_rows, File masterFile) throws IOException {
 		// Update the MASTER KW MINDER FILE.
-		LOGGER.info("KW MINDER: updating the master article id file....");
+		LOGGER.info("KW MINDER: updating the master grant id file....");
 		int counter=0;
 		PrintWriter pw = null;
 		FileWriter fw = new FileWriter(masterFile, true);
@@ -154,7 +154,7 @@ public class GrantKeywordMinerEntryPoint {
 				newGrants.add(ge);
 			}
 		}
-		LOGGER.info("KW MINDER: New KW Miner Article size:"+ newGrants.size());
+		LOGGER.info("KW MINDER: New KW Miner Grant size:"+ newGrants.size());
 		return newGrants;
 	}
 
@@ -224,7 +224,7 @@ public class GrantKeywordMinerEntryPoint {
 			Set<String> distnctTermsFoundForGrant = new HashSet<String>();
 			grantLevelMinedWordCount = 0;
 			Set<String> words = grantEntry.getWords();
-			// calling this method for each subject area of an article.
+			// calling this method for each subject area of an grant.
 			boolean matchFound = process(grantEntry, words, allkeywords, allMesh,
 					distnctTermsFoundForGrant);
 			if(matchFound){
@@ -256,7 +256,7 @@ public class GrantKeywordMinerEntryPoint {
 				//System.out.println(titleString+" found in the keywords list.");	
 				Set<String> existingKW = grantKWMap.get(uri);
 				Set<String> existingMesh = grantMeshMap.get(uri);	
-				// Add inferred keyword only if it does not currently exists in Keyword or MeSH terms of this Article.
+				// Add inferred keyword only if it does not currently exists in Keyword or MeSH terms of this Grant.
 				if((existingKW == null || !existingKW.contains(titleString.toUpperCase()))  && 
 						(existingMesh == null || !existingMesh.contains(titleString.toUpperCase()))){
 					matchWords.add(titleString);
