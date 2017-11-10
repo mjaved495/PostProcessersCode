@@ -65,7 +65,7 @@ public class ArticleKeywordMinerEntryPoint {
 	private Map<String, Set<String>> articleKWMap = new HashMap<String, Set<String>>();
 
 	private Set<String> stopWords = new HashSet<String>();
-	private String stopWordArray[] = {"Use", "Its"};
+	private String stopWordArray[] = {"Use", "Its", "1", "2", "3"};
 
 	public static void main(String[] args) {
 		try {

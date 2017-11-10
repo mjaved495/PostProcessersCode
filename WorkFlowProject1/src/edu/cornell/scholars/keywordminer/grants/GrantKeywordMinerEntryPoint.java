@@ -62,7 +62,7 @@ public class GrantKeywordMinerEntryPoint {
 	private Map<String, Set<String>> grantKWMap = new HashMap<String, Set<String>>();
 
 	private Set<String> stopWords = new HashSet<String>();
-	private String stopWordArray[] = {"Use", "Its"};
+	private String stopWordArray[] = {"Use", "Its", "1", "2", "3"};
 	
 	public static void main(String[] args) {
 		try {
