@@ -164,7 +164,7 @@ public class RDFBuilder {
 				gt.addProperty(RDFS.label, grntTitle);
 
 				String deptURI = obj.getDepartmentURI();
-				if(deptURI != null & !deptURI.isEmpty()){
+				if(deptURI != null && !deptURI.isEmpty() && !deptURI.equals("null")){
 					Resource dept = model.createResource(deptURI);
 					gt.addProperty(vivoRelates, dept);
 					dept.addProperty(vivoRelatedBy, gt);
