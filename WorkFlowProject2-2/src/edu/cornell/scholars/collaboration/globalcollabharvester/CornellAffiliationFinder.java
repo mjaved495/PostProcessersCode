@@ -45,7 +45,7 @@ public class CornellAffiliationFinder {
 			if(wosId != null && vwosId != null && wosId.trim().equals(vwosId.trim())){
 				//System.out.println("Article Matched");
 				articleFound = true;
-			}else if(pmId != null && vpmId != null && pmId.trim().equals(vpmId.trim())){
+			}else if((pmId != null && vpmId != null) && (pmId.trim().equals(vpmId.trim()) && (!pmId.isEmpty() && !vpmId.isEmpty()))){
 				//System.out.println("Article Matched");
 				articleFound = true;
 			}
@@ -100,6 +100,7 @@ public class CornellAffiliationFinder {
 						person.setAuthorName(auth);
 						person.setAuthorURI("http://scholars.cornell.edu/individual/"+netId);
 						person.setCornellAffiliation(getAffiliations(netId));
+						break;
 					}else if(givenNameE.substring(0, 1).equalsIgnoreCase(givenName.substring(0, 1))){
 //						System.err.println(auth);
 //						System.err.println(entry.getAuthor());
@@ -108,6 +109,7 @@ public class CornellAffiliationFinder {
 						person.setAuthorName(auth);
 						person.setAuthorURI("http://scholars.cornell.edu/individual/"+netId);
 						person.setCornellAffiliation(getAffiliations(netId));
+						break;
 					}
 				}
 			}

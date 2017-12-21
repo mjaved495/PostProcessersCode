@@ -19,7 +19,6 @@ import edu.cornell.scholars.journalsubjectareamapper.JournalToSubjectAreaMapEntr
 import edu.cornell.scholars.keywordcloudgenerator.UniversityLevelKeywordCloudGenerator;
 import edu.cornell.scholars.keywordminer.article.ArticleKeywordMinerEntryPoint;
 import edu.cornell.scholars.keywordminer.grants.GrantKeywordMinerEntryPoint;
-import edu.cornell.scholars.ospgrants.OSPGrantsEntryPoint;
 
 public class MainEntryPoint_WorkFlow1 {
 
@@ -61,14 +60,6 @@ public class MainEntryPoint_WorkFlow1 {
 		LOGGER.info("\n\n---------- STARTING HOMEPAGE LEVEL KEYWORD CLOUD GENERATOR PROCESS----------");
 		try{
 			runHomepageKeywordCloudProcess();
-		}catch(Exception exp){
-			LOGGER.log(Level.WARNING, "\n\n---------ERROR OCCURED:----------", exp);
-		}
-
-		//Run the Grants data process
-		LOGGER.info("\n\n---------- STARTING OSP GRANTS DATA PROCESS----------");
-		try{
-			runGrantsDataProcess();
 		}catch(Exception exp){
 			LOGGER.log(Level.WARNING, "\n\n---------ERROR OCCURED:----------", exp);
 		}
@@ -154,22 +145,6 @@ public class MainEntryPoint_WorkFlow1 {
 	private void runHomepageKeywordCloudProcess() throws IOException, ParserConfigurationException, SAXException {
 		UniversityLevelKeywordCloudGenerator obj = new UniversityLevelKeywordCloudGenerator();
 		obj.runProcess();	
-	}
-
-	/**
-	 * Reads the All-Grant file and identifies new grants.
-	 * CSV and RDF is generated only for the new grants.
-	 * 
-	 * New RDF triples should be added in the existing grants graph.
-	 * 
-	 * @throws NoSuchAlgorithmException
-	 * @throws IOException
-	 * @throws ParserConfigurationException
-	 * @throws SAXException
-	 */
-	private void runGrantsDataProcess() throws NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException {
-		OSPGrantsEntryPoint ospep = new OSPGrantsEntryPoint();
-		ospep.runProcess();
 	}
 
 	/**

@@ -466,7 +466,7 @@ public class JournalToSubjectAreaMapEntryPoint {
 							uri= SCHOLARS_IND+"SA-"+id;
 						}
 						subA = rdfmodel.createResource(uri);
-						subA.addProperty(RDF.type, SKOS_CONCEPT);
+						subA.addProperty(RDF.type, rdfmodel.createResource(SKOS_CONCEPT));
 						subA.addProperty(RDFS.label, sa);
 
 						subjectURIs.add(uri);

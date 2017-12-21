@@ -30,6 +30,9 @@ public class GlobalCollaborationHarvesterEntryPoint {
 
 	private static final Logger LOGGER = Logger.getLogger(GlobalCollaborationHarvesterEntryPoint.class.getName());
 	
+	// YEAR FILTER 
+	private static final int YEAR_FILTER = 2012;
+	
 	//input files
 	private static String WOSDATAFILE = null;
 	private static String AFFILIATION_GRID_FILE = null;
@@ -217,8 +220,18 @@ public class GlobalCollaborationHarvesterEntryPoint {
 					article.setKeywords(getSplitList(nextLine[12].replaceAll("\\\"", "")));
 					article.setWosCategories(getSplitList(nextLine[13].replaceAll("\\\"", "")));
 					article.setResearchAreas(getSplitList(nextLine[14].replaceAll("\\\"", "")));	
-					articles.add(article);
-					count++;
+					try{
+						if(Integer.parseInt(article.getYear()) >= YEAR_FILTER){
+							articles.add(article);
+							count++;
+						}
+					}catch(Exception exp){
+						System.out.println("Exception On:"+article.toString());
+						continue;
+					}
+						
+					//articles.add(article);
+					//count++;
 				}
 			}
 			buf.close();

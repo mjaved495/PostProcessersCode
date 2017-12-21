@@ -26,6 +26,54 @@ public class Author {
 		this.cornellAffiliation = cornellAffiliation;
 	}
 
+	public String getAuthorName() {
+		return authorName;
+	}
+
+	public void setAuthorName(String authorName) {
+		this.authorName = authorName;
+	}
+
+	public String getAuthorURI() {
+		return authorURI;
+	}
+
+	public void setAuthorURI(String authorURI) {
+		this.authorURI = authorURI;
+	}
+
+	public AuthorAffiliation getAuthorAffiliation() {
+		return authorAffiliation;
+	}
+
+	public void setAuthorAffiliation(AuthorAffiliation authorAffiliation) {
+		this.authorAffiliation = authorAffiliation;
+	}
+
+	public String getCountry() {
+		return country;
+	}
+
+	public void setCountry(String country) {
+		this.country = country;
+	}
+
+	public String getState() {
+		return state;
+	}
+
+	public void setState(String state) {
+		this.state = state;
+	}
+
+	public Set<String> getCornellAffiliation() {
+		return cornellAffiliation;
+	}
+
+	public void setCornellAffiliation(Set<String> cornellAffiliation) {
+		this.cornellAffiliation = cornellAffiliation;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -81,53 +129,6 @@ public class Author {
 		return true;
 	}
 
-	public String getAuthorName() {
-		return authorName;
-	}
-
-	public void setAuthorName(String authorName) {
-		this.authorName = authorName;
-	}
-
-	public String getAuthorURI() {
-		return authorURI;
-	}
-
-	public void setAuthorURI(String authorURI) {
-		this.authorURI = authorURI;
-	}
-
-	public AuthorAffiliation getAuthorAffiliation() {
-		return authorAffiliation;
-	}
-
-	public void setAuthorAffiliation(AuthorAffiliation authorAffiliation) {
-		this.authorAffiliation = authorAffiliation;
-	}
-
-	public String getCountry() {
-		return country;
-	}
-
-	public void setCountry(String country) {
-		this.country = country;
-	}
-
-	public String getState() {
-		return state;
-	}
-
-	public void setState(String state) {
-		this.state = state;
-	}
-
-	public Set<String> getCornellAffiliation() {
-		return cornellAffiliation;
-	}
-
-	public void setCornellAffiliation(Set<String> cornellAffiliation) {
-		this.cornellAffiliation = cornellAffiliation;
-	}
-
+	
 	
 }
