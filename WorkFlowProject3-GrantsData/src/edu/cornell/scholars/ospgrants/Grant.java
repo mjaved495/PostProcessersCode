@@ -1,5 +1,11 @@
 package edu.cornell.scholars.ospgrants;
 
+/**
+ * Grant Model
+ * @author mj495
+ *
+ */
+
 public class Grant {
 
 	private String localawardId;
