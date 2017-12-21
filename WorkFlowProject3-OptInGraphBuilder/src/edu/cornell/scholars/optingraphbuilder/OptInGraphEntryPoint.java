@@ -10,6 +10,11 @@ import java.util.logging.Logger;
 import edu.cornell.scholars.config.Configuration;
 import edu.cornell.scholars.config.SetupPropertyValues;
 
+/**
+ * OptIn Graph builder Entry Point
+ * @author mj495
+ *
+ */
 public class OptInGraphEntryPoint {
 
 	private static final Logger LOGGER = Logger.getLogger( OptInGraphEntryPoint.class.getName() );

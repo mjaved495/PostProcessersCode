@@ -10,6 +10,11 @@ import java.util.logging.Logger;
 import edu.cornell.scholars.config.Configuration;
 import edu.cornell.scholars.config.SetupPropertyValues;
 
+/**
+ * Photo Triples and folders creator. 
+ * @author mj495
+ *
+ */
 public class PhotoTriplesGeneratorEntryPoint {
 
 	private static final Logger LOGGER = Logger.getLogger(PhotoTriplesGeneratorEntryPoint.class.getName());

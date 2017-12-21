@@ -11,7 +11,11 @@ import edu.cornell.scholars.config.Configuration;
 import edu.cornell.scholars.config.SetupPropertyValues;
 
 
-
+/**
+ * Personal URL data generator Entry Point
+ * @author mj495
+ *
+ */
 public class PersonUriLinkGeneratorCore {
 
 	private static final Logger LOGGER = Logger.getLogger(PersonUriLinkGeneratorCore.class.getName());
