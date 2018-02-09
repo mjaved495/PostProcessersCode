@@ -19,6 +19,7 @@ import edu.cornell.scholars.journalsubjectareamapper.JournalToSubjectAreaMapEntr
 import edu.cornell.scholars.keywordcloudgenerator.UniversityLevelKeywordCloudGenerator;
 import edu.cornell.scholars.keywordminer.article.ArticleKeywordMinerEntryPoint;
 import edu.cornell.scholars.keywordminer.grants.GrantKeywordMinerEntryPoint;
+import edu.cornell.scholars.scopusauthorkeywords.ScopusAuthorKeywordsEntryPoint;
 
 public class MainEntryPoint_WorkFlow1 {
 
@@ -84,6 +85,14 @@ public class MainEntryPoint_WorkFlow1 {
 		LOGGER.info("\n\n---------- STARTING GRANTS INFERRED KEYWORDS DATA PROCESS----------");
 		try{
 			runGrantInferredKeywordsProcess();
+		}catch(Exception exp){
+			LOGGER.log(Level.WARNING, "\n\n---------ERROR OCCURED:----------", exp);
+		}
+
+		//Run the scopus author keywords data process
+		LOGGER.info("\n\n---------- STARTING SCOPUS AUTHOR KEYWORDS DATA PROCESS----------");
+		try{
+			runScopusAuthorKeywordsProcess();
 		}catch(Exception exp){
 			LOGGER.log(Level.WARNING, "\n\n---------ERROR OCCURED:----------", exp);
 		}
@@ -162,6 +171,17 @@ public class MainEntryPoint_WorkFlow1 {
 		jrnlep.runProcess();
 	}
 
+	/**
+	 * This process read scopus xml files and generate .nt triple files for freetextKeywords for 
+	 * all the articles that has scopus document id (i.e. has scopus as a source).
+	 * this has to be done as we do not get author keywords from scopus as a source in Symplectic Elements.
+	 * @throws IOException 
+	 * 
+	 */
+	private void runScopusAuthorKeywordsProcess() throws IOException {
+		ScopusAuthorKeywordsEntryPoint obj = new ScopusAuthorKeywordsEntryPoint();
+		obj.runProcess();
+	}
 
 	private static String getCurrentDate() {
 		String date = null;
@@ -189,6 +209,7 @@ public class MainEntryPoint_WorkFlow1 {
 		createFolder(new File(Configuration.POSTPROCESS_RESULTSET_FOLDER+"/"+date+"/"+Configuration.INFERRED_KEYWORDS_FOLDER));
 		createFolder(new File(Configuration.POSTPROCESS_RESULTSET_FOLDER+"/"+date+"/"+Configuration.HOMEPAGE_KEYWORD_CLOUD_FOLDER));
 		createFolder(new File(Configuration.POSTPROCESS_RESULTSET_FOLDER+"/"+date+"/"+Configuration.SUBJECTAREA_FOLDER));
+		createFolder(new File(Configuration.POSTPROCESS_RESULTSET_FOLDER+"/"+date+"/"+Configuration.SCOPUS_FOLDER));
 	}
 
 	private static void createFolder(File file) {

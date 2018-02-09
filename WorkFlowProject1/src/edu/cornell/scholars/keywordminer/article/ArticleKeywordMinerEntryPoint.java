@@ -47,7 +47,8 @@ public class ArticleKeywordMinerEntryPoint {
 	private static String ARTICLE_2_KW_FILENAME = null;
 	private static String ARTICLE_2_MESH_FILENAME = null;
 	private static String KWMINER_ARTICLEID_MASTER_FILENAME = null;
-
+	private static String SCOPUS_ABSTRACTS = null;
+	
 	//output file names
 	private static String ARTICLE_MAP_CSVDATA_FILEPATH = null;
 	private static String ARTICLE_MAP_NTDATA_FILEPATH =  null;
@@ -96,7 +97,9 @@ public class ArticleKeywordMinerEntryPoint {
 				Configuration.ARTICLE_2_MESHTERM_MAP_FILENAME;
 		KWMINER_ARTICLEID_MASTER_FILENAME = Configuration.SUPPL_FOLDER +"/"+ 
 				Configuration.ARTICLEID_MASTER_KEYWORDMINER_FILENAME;		
-
+		SCOPUS_ABSTRACTS = Configuration.QUERY_RESULTSET_FOLDER +"/"+ Configuration.date +"/"+
+				Configuration.ARTICLE_2_SCOPUS_ABSTRACT_MAP_FILENAME;
+		
 		//output file names
 		ARTICLE_MAP_CSVDATA_FILEPATH = Configuration.POSTPROCESS_RESULTSET_FOLDER +"/"+ Configuration.date 
 				+"/"+ Configuration.INFERRED_KEYWORDS_FOLDER +"/"+ Configuration.INF_KEYWORDS_CSV;
@@ -122,7 +125,12 @@ public class ArticleKeywordMinerEntryPoint {
 		articleKWMap   = getArticleKeywordMeSHMap(new File(ARTICLE_2_KW_FILENAME));
 		articleMeshMap = getArticleKeywordMeSHMap(new File(ARTICLE_2_MESH_FILENAME));
 
+		
 		Map<String, ArticleEntriesData> articleDataMap =  createArticleMapOfEntries(newArticles_rows);
+		// Run process specifically for Scopus abstracts
+		Map<String, String>  scopusMap = getScopusAbstractData(SCOPUS_ABSTRACTS);
+		addArticleMapOfEntriesForScopusAbstracts(scopusMap, articleDataMap);
+		
 		LOGGER.info(articleDataMap.size()+" rows of article data map.");
 
 		compareAndProcess(articleDataMap);
@@ -130,6 +138,12 @@ public class ArticleKeywordMinerEntryPoint {
 		saveDataInARDF(articleDataMap, ARTICLE_MAP_NTDATA_FILEPATH);
 
 		updateMasterFile(newArticles_rows, new File(KWMINER_ARTICLEID_MASTER_FILENAME));
+	}
+
+	private Map<String, String> getScopusAbstractData(String scopusFile) {
+		Map<String, String> data = new HashMap<String, String>();
+		
+		return data;
 	}
 
 	private Set<String> getStopWordList(String[] stopWordArray2) {
@@ -320,6 +334,11 @@ public class ArticleKeywordMinerEntryPoint {
 		printWriter.close();
 	}
 
+	private void addArticleMapOfEntriesForScopusAbstracts(Map<String, String> scopusMap, Map<String, ArticleEntriesData> entries) {
+		
+	}
+	
+	
 	private Map<String, ArticleEntriesData> createArticleMapOfEntries(List<ArticleEntries> article_rows) {
 		Map<String, ArticleEntriesData> map = new HashMap<String, ArticleEntriesData>();
 		for(int index=0; index<article_rows.size();index++){

@@ -16,6 +16,7 @@ public static String date = null;
 	public static String INFERRED_KEYWORDS_FOLDER = "inferredkeywords";
 	public static String HOMEPAGE_KEYWORD_CLOUD_FOLDER = "kwclouds";
 	public static String SUBJECTAREA_FOLDER = "subjectarea";
+	public static String SCOPUS_FOLDER = "scopus";
 	
 	// GENERAL
 	public static String ALL_KEYWORDS_FILENAME = "AllFreeTextKeywords.psv";
@@ -29,7 +30,7 @@ public static String date = null;
 	public static String ARTICLEID_MASTER_KEYWORDMINER_FILENAME = 	"MASTER_KeywordMiner_ARTICLEID.csv";
 	public static String INF_KEYWORDS_CSV = "ArticleMapWithMinedKeywordsAndMeSH.csv";
 	public static String INF_KEYWORDS_NT =  "ArticleMapWithMinedKeywordsAndMeSH.nt";
-	
+	public static String ARTICLE_2_SCOPUS_ABSTRACT_MAP_FILENAME = "Article2ScopusAbstractMap.xml";
 	
 	// HOMEPAGE KEYWORD CLOUD GENERATOR
 	public static String ARTICLE_2_PERSON_MAP_FILENAME = "Article2PersonMap.csv";
@@ -68,47 +69,12 @@ public static String date = null;
 	public static String GRANTS_INF_KEYWORDS_CSV = "GrantMapWithMinedKeywordsAndMeSH.csv";
 	public static String GRANTS_INF_KEYWORDS_NT =  "GrantMapWithMinedKeywordsAndMeSH.nt";
 	
-
-//	public static String WOS_DATA_FOLDER = "wosdata";
-//	public static String ARTICLEID_MASTER_FILENAME = 	"MASTER_ARTICLEID.csv";
-//	
-//	public static String PERSON_2_ARTICLE_MAP_FILENAME = "Person2ArticleArticleIdMap.csv";
-//	
-//	public static String WOS_QUERY_FILENAME = "WOSQueryLineFile.txt";
-//	public static String WOS_DATA_FILENAME = "WOSDataFile.csv";
-//	
-//	public static String COUNTRIES_LIST_FILENAME = "countries.tsv";
-//	public static String COUNTRIES_FILE = COUNTRIES_LIST_FILENAME;
-//	public static String US_STATE_LIST_FILENAME = "usa_state.txt";
-//	public static String USA_STATE_FILE = US_STATE_LIST_FILENAME;
-//	
-//	public static String AFF_GRID_MAP_FILENAME = "AffiliationGridMapper.csv";
-//	public static String AFF_GRID_MAP = AFF_GRID_MAP_FILENAME;
-//	public static String GRID_FILENAME = "grid.csv";
-//	
-//	public static String AFFILIATION_STRING_TO_COLLEGE_MAP_FILE = "CornellAffiliationOrganization.csv";
-//	
-//	public static String WOS_PERSON_NETID_MASTER_FILE = "person_netId_master.csv";
-//	public static String WOS_PERSON_NETID_CURRENT_FILE = "person_netId_current.csv";
-//	public static String ARTICLE_2_WOS_PUBMED_ID_MAP_FILE_CSV = "Article2WosPubmedIdMap.csv";
-//	
-//	public static String INT_COLLABORATIONS_FILE_CSV  = "InternalCollaborations.csv";
-//	public static String EXT_COLLABORATIONS_FILE_CSV  = "ExternalCollaborations.csv";
-//	public static String EXT_COLLABORATIONS_FILE_JSON = "ExternalCollaborations.json";
-//	public static String EXT_COLLABORATIONS_COUNT_CSV = "ExternalCollaborationsCount.csv";
-//	public static String NOTFOUND_AFFILIATION_SET_FILE = "notFoundAffiliationList.csv";
-//	public static String INTERDEPT_EN_COLLAB_QUERY_RESULT_FILENAME_CSV = "interdept-en.csv";
-//	public static String INTERDEPT_EN_COLLAB_QUERY_RESULT_FILENAME_JSON = "fake_collab_data_interdept_viz.json";
-//	public static String CROSSUNIT_EN_COLLAB_QUERY_RESULT_FILENAME_CSV = "crossunit-en.csv";
-//	public static String CROSSUNIT_EN_COLLAB_QUERY_RESULT_FILENAME_JSON = "fake_collab_data_intercollege_viz.json";
-//
-//	
-//	public static String ARTICLE_2_PERSON_MAP_ENG_FILENAME = "Article2PersonMapENG.csv";
-//	public static String ARTICLE_2_KEYWORDSET_MAP_ENG_FILENAME = "Article2KeywordSetMapENG.csv";
-//	public static String ENG_KEYWORD_CLOUD = "ENGKWCloud.json";
-
+	//SCOPUS AUTHOR KEYWORDS
+	public static String SCOPUS_FREETEXTKEYWORDS_OUTPUT_FILE = "scopusFreeTextKeywords.nt";
+	public static String SCOPUS_ARTICLEID_MASTER_KEYWORDMINER_FILENAME = "MASTER_KeywordMiner_ARTICLEID_SCOPUS.csv";
+	public static String SCOPUS_ARTICLEID_2_FREETEXTKEYWORDS = "scopusAuthorKeywords.csv";
 	
-
+	
 	public static void setDate(String date) {
 		Configuration.date = date;
 	}
