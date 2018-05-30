@@ -47,7 +47,12 @@ public class ArticleKeywordMinerEntryPoint {
 	private static String ARTICLE_2_KW_FILENAME = null;
 	private static String ARTICLE_2_MESH_FILENAME = null;
 	private static String KWMINER_ARTICLEID_MASTER_FILENAME = null;
-	private static String SCOPUS_ABSTRACTS = null;
+	private static String SCOPUS_FOLDER = null;
+	private static String SCOPUS_INPUT_FILE = null;
+	
+	public static final String ABSTRACT = "abstract";
+	public static final String CEPARA_TAG = "ce:para";
+	public static final String DOT = ".";
 	
 	//output file names
 	private static String ARTICLE_MAP_CSVDATA_FILEPATH = null;
@@ -64,7 +69,8 @@ public class ArticleKeywordMinerEntryPoint {
 
 	private Map<String, Set<String>> articleMeshMap = new HashMap<String, Set<String>>();
 	private Map<String, Set<String>> articleKWMap = new HashMap<String, Set<String>>();
-
+	private Map<String, String> scopusIdToURLMap = new HashMap<String, String>();
+	
 	private Set<String> stopWords = new HashSet<String>();
 	private String stopWordArray[] = {"Use", "Its", "1", "2", "3"};
 
@@ -97,8 +103,11 @@ public class ArticleKeywordMinerEntryPoint {
 				Configuration.ARTICLE_2_MESHTERM_MAP_FILENAME;
 		KWMINER_ARTICLEID_MASTER_FILENAME = Configuration.SUPPL_FOLDER +"/"+ 
 				Configuration.ARTICLEID_MASTER_KEYWORDMINER_FILENAME;		
-		SCOPUS_ABSTRACTS = Configuration.QUERY_RESULTSET_FOLDER +"/"+ Configuration.date +"/"+
-				Configuration.ARTICLE_2_SCOPUS_ABSTRACT_MAP_FILENAME;
+		SCOPUS_FOLDER = Configuration.QUERY_RESULTSET_FOLDER +"/"+ Configuration.date +"/"+
+				Configuration.SCOPUS_FOLDER;
+		SCOPUS_INPUT_FILE = Configuration.QUERY_RESULTSET_FOLDER +"/"+ Configuration.date +"/"+
+				Configuration.NON_ABSTRACT_SCOPUS_IDS;
+		
 		
 		//output file names
 		ARTICLE_MAP_CSVDATA_FILEPATH = Configuration.POSTPROCESS_RESULTSET_FOLDER +"/"+ Configuration.date 
@@ -108,11 +117,16 @@ public class ArticleKeywordMinerEntryPoint {
 
 	}
 
+	/**
+	 * Currently we work with Articles that has title AND abstract.
+	 * @throws IOException
+	 * @throws ParserConfigurationException
+	 * @throws SAXException
+	 */
 	public void runProcess() throws IOException, ParserConfigurationException, SAXException {
 		setLocalDirectories();
 
 		stopWords = getStopWordList(stopWordArray);
-
 		article_rows = readArticleMapFile(new File(ARTICLE_FILENAME));
 		Set<String> articleURIs = readMasterArticleFile(new File(KWMINER_ARTICLEID_MASTER_FILENAME));
 		List<ArticleEntries> newArticles_rows = filterNewArticles(article_rows, articleURIs);
@@ -124,15 +138,17 @@ public class ArticleKeywordMinerEntryPoint {
 		allMesh = getMeshLines(new File(ALL_MESHTERM_FILENAME));
 		articleKWMap   = getArticleKeywordMeSHMap(new File(ARTICLE_2_KW_FILENAME));
 		articleMeshMap = getArticleKeywordMeSHMap(new File(ARTICLE_2_MESH_FILENAME));
-
+		scopusIdToURLMap = getScopusIdToURIMap(new File(SCOPUS_INPUT_FILE));
 		
 		Map<String, ArticleEntriesData> articleDataMap =  createArticleMapOfEntries(newArticles_rows);
 		// Run process specifically for Scopus abstracts
-		Map<String, String>  scopusMap = getScopusAbstractData(SCOPUS_ABSTRACTS);
-		addArticleMapOfEntriesForScopusAbstracts(scopusMap, articleDataMap);
+		Map<String, String>  scopusMap = getScopusAbstractData(scopusIdToURLMap.keySet(), new File(SCOPUS_FOLDER));
+		if(scopusMap.size() > 0){
+			addArticleMapOfEntriesForScopusAbstracts(scopusMap, articleDataMap);
+		}
+		
 		
 		LOGGER.info(articleDataMap.size()+" rows of article data map.");
-
 		compareAndProcess(articleDataMap);
 		saveArticleMapDataInAFile(articleDataMap, ARTICLE_MAP_CSVDATA_FILEPATH);
 		saveDataInARDF(articleDataMap, ARTICLE_MAP_NTDATA_FILEPATH);
@@ -140,10 +156,107 @@ public class ArticleKeywordMinerEntryPoint {
 		updateMasterFile(newArticles_rows, new File(KWMINER_ARTICLEID_MASTER_FILENAME));
 	}
 
-	private Map<String, String> getScopusAbstractData(String scopusFile) {
-		Map<String, String> data = new HashMap<String, String>();
-		
+	private Map<String, String> getScopusIdToURIMap(File inputFile) throws IOException {
+		Map<String, String> urlToScopusId = new HashMap<String, String>();
+		BufferedReader br = null;
+		String line = "";
+		long lineCount = 0;
+		br = new BufferedReader(new FileReader(inputFile));
+		while ((line = br.readLine()) != null) {
+			lineCount++;
+			if(line.trim().length() == 0 || lineCount == 1) continue;  // header or empty
+			@SuppressWarnings("resource")
+			CSVReader reader = new CSVReader(new StringReader(line),',', '"');	
+			String[] tokens;
+			while ((tokens = reader.readNext()) != null) {
+				try {
+					String url = tokens[0];
+					String scopusId = tokens[1];
+					scopusId = scopusId.substring(scopusId.lastIndexOf("-")+1);
+					urlToScopusId.put(scopusId, url);
+				}catch (ArrayIndexOutOfBoundsException exp) {
+					for (String s : tokens) {
+						LOGGER.warning("ArrayIndexOutOfBoundsException: "+ lineCount+" :"+ s);
+					}
+					LOGGER.warning("\n");
+					continue;
+				}
+			}
+		}
+		LOGGER.info(lineCount + " rows read in the input file.");
+		LOGGER.info(urlToScopusId.size() + " URL to Scopus ID Map size.");
+		br.close();
+		return urlToScopusId;
+	}
+	
+	
+	
+	
+	
+	private Map<String, String> getScopusAbstractData(Set<String> scopusIds, File scopusFolder) {
+		Map<String, String> data = new HashMap<String, String>(); // <url, abstract>
+		File xmlFiles[] = scopusFolder.listFiles();
+		if(xmlFiles == null){
+			LOGGER.info("No Scopus XML file found....returning");
+			return data;
+		}
+		int notFoundAbstract = 0;
+		int notFoundURL = 0;
+		for(File file: xmlFiles){
+			//System.out.println(file.getName());
+			if(file.getName().endsWith(".xml")){
+				try {
+					String scopusId = file.getName().substring(0, file.getName().indexOf(DOT));
+//					if(scopusId.equals("84996917576")){
+//						System.out.println(scopusId);
+//					}
+					if(scopusIds.contains(scopusId)){
+						String scopusAbstract = processXMLFile(file);
+						String url = scopusIdToURLMap.get(scopusId);
+						if(url != null && scopusAbstract != null){
+							data.put(url, scopusAbstract);
+						}else{
+							if(scopusAbstract == null){
+								notFoundAbstract++;
+							}
+							if(url == null){
+								notFoundURL++;
+							}
+						}
+					}
+				} catch (ParserConfigurationException | SAXException | IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+		LOGGER.info("Got Abstract for "+ data.size()+ " articles.");
+		LOGGER.info("Abstract not found for "+ notFoundAbstract+ " articles.");
+		LOGGER.info("URL not found for "+ notFoundURL+ " articles.");
 		return data;
+	}
+	
+	private String processXMLFile(File file) throws ParserConfigurationException, SAXException, IOException {
+		//LOGGER.info("processing "+ file.getName());
+		String scopusAbstract = getAbstract(file);
+		return scopusAbstract;
+	}
+	
+	
+
+	private String getAbstract(File xmlFile){
+		String sAbstract = null;
+		DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+		DocumentBuilder dBuilder;
+		try {
+			dBuilder = dbFactory.newDocumentBuilder();
+			Document doc = dBuilder.parse(xmlFile);
+			Node abs = doc.getElementsByTagName(ABSTRACT).item(0);
+			Element absElement = (Element) abs;
+			sAbstract = absElement.getElementsByTagName(CEPARA_TAG).item(0).getTextContent();
+		} catch (ParserConfigurationException | SAXException | IOException | NullPointerException e) {
+			LOGGER.warning("No Abstract found in xml file for "+ xmlFile.getName());
+		} 
+		return sAbstract;
 	}
 
 	private Set<String> getStopWordList(String[] stopWordArray2) {
@@ -248,9 +361,9 @@ public class ArticleKeywordMinerEntryPoint {
 			ArticleEntriesData articleEntry = articleDataMap.get(articleURI);
 			Set<String> distnctTermsFoundForAnArticle = new HashSet<String>();
 			articleLevelMinedWordCount = 0;
-			Set<String> titleStrings = articleEntry.getTitlewords();
+			Set<String> titleAbstractStrings = articleEntry.getTitleAbstractWords();
 			// calling this method for each subject area of an article.
-			boolean matchFound = process(articleEntry, titleStrings, allkeywords, allMesh,
+			boolean matchFound = process(articleEntry, titleAbstractStrings, allkeywords, allMesh,
 					distnctTermsFoundForAnArticle);
 			if(matchFound){
 				articlecount++;
@@ -262,7 +375,7 @@ public class ArticleKeywordMinerEntryPoint {
 
 	}
 
-	private boolean process(ArticleEntriesData articleEntry, Set<String> titleStrings, 
+	private boolean process(ArticleEntriesData articleEntry, Set<String> words, 
 			Set<String> keywords, Set<Mesh> pubmeds, Set<String> distinctTermsFoundForAnArticle) {
 		String uri = articleEntry.getArticleURI();
 		//		if(uri.equals("http://scholars.cornell.edu/individual/UR-6864")){
@@ -273,23 +386,23 @@ public class ArticleKeywordMinerEntryPoint {
 		for(String keyword : keywords){
 			UCKeywords.add(keyword.toUpperCase());
 		}
-		for(String titleString : titleStrings){
+		for(String word : words){
 			
-			if(!stopWords.contains(titleString)) continue; // DO NOT PROCESS STOP WORDS
+			if(!stopWords.contains(words)) continue; // DO NOT PROCESS STOP WORDS
 			
-			if(UCKeywords.contains(titleString.toUpperCase())){
+			if(UCKeywords.contains(word.toUpperCase())){
 				//System.out.println(titleString+" found in the keywords list.");	
 				Set<String> existingKW = articleKWMap.get(uri);
 				Set<String> existingMesh = articleMeshMap.get(uri);	
 				// Add inferred keyword only if it does not currently exists in Keyword or MeSH terms of this Article.
-				if((existingKW == null || !existingKW.contains(titleString.toUpperCase()))  && 
-						(existingMesh == null || !existingMesh.contains(titleString.toUpperCase()))){
-					matchWords.add(titleString);
-					articleEntry.addKeywords(titleString);
+				if((existingKW == null || !existingKW.contains(word.toUpperCase()))  && 
+						(existingMesh == null || !existingMesh.contains(word.toUpperCase()))){
+					matchWords.add(word);
+					articleEntry.addKeywords(word);
 					count++;
-					if(!distinctTermsFoundForAnArticle.contains(titleString)){
+					if(!distinctTermsFoundForAnArticle.contains(word)){
 						articleLevelMinedWordCount++;
-						distinctTermsFoundForAnArticle.add(titleString);
+						distinctTermsFoundForAnArticle.add(word);
 					}
 					matchFound=true;
 				}	
@@ -300,20 +413,20 @@ public class ArticleKeywordMinerEntryPoint {
 		for(Mesh mesh : pubmeds){
 			UCMeshTerms.add(mesh.getMeshLabel().toUpperCase());
 		}
-		for(String titleString : titleStrings){
-			if(UCMeshTerms.contains(titleString.toUpperCase())){
+		for(String word : words){
+			if(UCMeshTerms.contains(word.toUpperCase())){
 				//System.out.println(titleString+" found in the keywords list.");
 				Set<String> existingKW = articleKWMap.get(uri);
 				Set<String> existingMesh = articleMeshMap.get(uri);	
 				// Add inferred keyword only if it does not currently exists in Keyword or MeSH terms of this Article.
-				if((existingKW == null || !existingKW.contains(titleString.toUpperCase()))  && 
-						(existingMesh == null || !existingMesh.contains(titleString.toUpperCase()))){
-					matchWords.add(titleString);
-					articleEntry.addMeshTerms(titleString);
+				if((existingKW == null || !existingKW.contains(word.toUpperCase()))  && 
+						(existingMesh == null || !existingMesh.contains(word.toUpperCase()))){
+					matchWords.add(word);
+					articleEntry.addMeshTerms(word);
 					count++;
-					if(!distinctTermsFoundForAnArticle.contains(titleString)){
+					if(!distinctTermsFoundForAnArticle.contains(word)){
 						articleLevelMinedWordCount++;
-						distinctTermsFoundForAnArticle.add(titleString);
+						distinctTermsFoundForAnArticle.add(word);
 					}
 					matchFound=true;
 				}
@@ -336,6 +449,25 @@ public class ArticleKeywordMinerEntryPoint {
 
 	private void addArticleMapOfEntriesForScopusAbstracts(Map<String, String> scopusMap, Map<String, ArticleEntriesData> entries) {
 		
+		Set<String> uris = scopusMap.keySet();
+		
+		for(String uri :uris){
+			String abs = scopusMap.get(uri);
+			if(entries.get(uri) == null){
+				ArticleEntriesData data = new ArticleEntriesData();
+				data.setArticleURI(uri);
+				data.setArticleAbstract(abs);
+				if(abs != null){
+					Set<String> abstractWords = getWords(abs);
+					for(String word: abstractWords){
+						if(!stopWords.contains(word)){
+							data.addTitleAbstractwords(word); 
+						}
+					}
+				}
+				entries.put(uri, data);
+			}
+		}
 	}
 	
 	
@@ -354,14 +486,14 @@ public class ArticleKeywordMinerEntryPoint {
 					Set<String> abstractWords = getWords(obj.getArticleAbstract());
 					for(String word: abstractWords){
 						if(!stopWords.contains(word)){
-							data.addTitlewords(word); 
+							data.addTitleAbstractwords(word); 
 						}
 					}
 				}
 				Set<String> words = getWords(title);
 				for(String word: words){
 					if(!stopWords.contains(word)){
-						data.addTitlewords(word); 
+						data.addTitleAbstractwords(word); 
 					}
 				}
 				map.put(articleURI, data);

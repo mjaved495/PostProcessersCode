@@ -50,7 +50,7 @@ public class MainEntryPoint_WorkFlow1 {
 	private void runProcess() {
 
 		//Run the InferredKeywords Process
-		LOGGER.info("\n\n---------- STARTING INFERRED KEYWORD HARVEST PROCESS----------");
+		LOGGER.info("\n\n---------- STARTING INFERRED KEYWORD HARVEST FRO ARTICLES PROCESS----------");
 		try{
 			runInferredKeywordProcess();
 		}catch(Exception exp){
@@ -82,7 +82,7 @@ public class MainEntryPoint_WorkFlow1 {
 		}
 
 		//Run the collaboration data process
-		LOGGER.info("\n\n---------- STARTING GRANTS INFERRED KEYWORDS DATA PROCESS----------");
+		LOGGER.info("\n\n---------- STARTING INFERRED KEYWORD HARVEST FRO GRANTS PROCESS----------");
 		try{
 			runGrantInferredKeywordsProcess();
 		}catch(Exception exp){

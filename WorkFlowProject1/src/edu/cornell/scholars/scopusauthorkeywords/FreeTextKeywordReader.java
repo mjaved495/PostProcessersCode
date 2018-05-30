@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Logger;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -19,6 +20,8 @@ import org.xml.sax.SAXException;
 
 public class FreeTextKeywordReader {
 
+	private static final Logger LOGGER = Logger.getLogger(FreeTextKeywordReader.class.getName());
+	
 	public static final String AUTHOR_KEYWORDS = "authkeywords";
 	public static final String AUTHOR_KEYWORD = "author-keyword";
 	public static final String DOT = ".";
@@ -32,6 +35,10 @@ public class FreeTextKeywordReader {
 		urlToScopusIdMap = urlToScopusId;
 		
 		File folder = new File(folderPath);
+		if(!folder.exists()){
+			LOGGER.warning("scopus xml file folder does not exists in query_result folder....returning.");
+			return null;
+		}
 		File xmlFiles[] = folder.listFiles();
 		for(File file: xmlFiles){
 			//System.out.println(file.getName());

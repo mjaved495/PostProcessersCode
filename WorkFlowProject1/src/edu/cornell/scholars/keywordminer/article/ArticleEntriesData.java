@@ -5,23 +5,23 @@ import java.util.Set;
 
 public class ArticleEntriesData extends ArticleEntries{
 
-	private Set<String> titlswords;
+	private Set<String> titleAbstractWords;
 	private Set<String> meshTerms;
 	private Set<String> keywords;
 	private int minedKeywordCount;
 	
-	public Set<String> getTitlewords() {
-		return titlswords;
+	public Set<String> getTitleAbstractWords() {
+		return titleAbstractWords;
 	}
 
 	public void setTitlewords(Set<String> titlswords) {
-		this.titlswords = titlswords;
+		this.titleAbstractWords = titlswords;
 	}
-	public void addTitlewords(String titlswords) {
-		if(this.titlswords == null){
-			this.titlswords = new HashSet<String>();
+	public void addTitleAbstractwords(String titlswords) {
+		if(this.titleAbstractWords == null){
+			this.titleAbstractWords = new HashSet<String>();
 		}
-		this.titlswords.add(titlswords);
+		this.titleAbstractWords.add(titlswords);
 	}
 
 	public Set<String> getMeshTerms() {
@@ -59,8 +59,13 @@ public class ArticleEntriesData extends ArticleEntries{
 
 	@Override
 	public String toString() {
-		return "\"" + getArticleURI() + "\",\"" + getArticleTitle().replaceAll("\"", "") + "\",\"" + minedKeywordCount + "\",\"" + meshTerms
-				+ "\",\"" + keywords + "\"";
+		if(getArticleTitle() == null){
+			return "\"" + getArticleURI() + "\",\"" + "Null" + "\",\"" + minedKeywordCount + "\",\"" + meshTerms
+					+ "\",\"" + keywords + "\"";
+		}else{
+			return "\"" + getArticleURI() + "\",\"" + getArticleTitle().replaceAll("\"", "") + "\",\"" + minedKeywordCount + "\",\"" + meshTerms
+					+ "\",\"" + keywords + "\"";
+		}
 	}
 	
 	

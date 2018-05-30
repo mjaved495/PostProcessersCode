@@ -425,6 +425,8 @@ public class JournalToSubjectAreaMapEntryPoint {
 				if(subjectLabels.contains(sa)){
 					uri = subjectAreaMap.get(sa);
 					subA = rdfmodel.createResource(uri);
+					subA.addProperty(RDF.type, rdfmodel.createResource(SKOS_CONCEPT));
+					subA.addProperty(RDFS.label, sa);
 				}else{
 					int id = i.next();
 					uri = SCHOLARS_IND+"SA-"+id;
@@ -458,6 +460,8 @@ public class JournalToSubjectAreaMapEntryPoint {
 					if(subjectLabels.contains(sa)){
 						uri = subjectAreaMap.get(sa);
 						subA = rdfmodel.createResource(uri);
+						subA.addProperty(RDF.type, rdfmodel.createResource(SKOS_CONCEPT));
+						subA.addProperty(RDFS.label, sa);
 					}else{
 						int id = i.next();
 						uri = SCHOLARS_IND+"SA-"+id;

@@ -13,10 +13,19 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
 import com.opencsv.CSVReader;
 
@@ -49,12 +58,22 @@ public class ScopusAuthorKeywordsEntryPoint {
 	public void runProcess() throws IOException {
 		setLocalDirectories();
 
-		readInputFileAndGenerateMaps(EXISTING_KEYWORDS);
+		try {
+			readInputFileAndGenerateMaps(EXISTING_KEYWORDS);
+		} catch (ParserConfigurationException e) {
+			e.printStackTrace();
+			LOGGER.warning("**** ERROR.... -- returning");
+			return;
+		} catch (SAXException e) {
+			e.printStackTrace();
+			LOGGER.warning("**** ERROR.... -- returning");
+			return;
+		}
 
 		FreeTextKeywordReader extractor = new FreeTextKeywordReader();
 		Map<String, Set<String>> scholarsURLKeywordMap = extractor.extractNewKeywords(existingKeywords, urlToScopusId, SCOPUS_FILE_FOLDER);
 
-		if(scholarsURLKeywordMap.size() == 0){
+		if(scholarsURLKeywordMap == null || scholarsURLKeywordMap.size() == 0){
 			LOGGER.info(scholarsURLKeywordMap.size()+" author keywords found.....returning.");
 			return;
 		}
@@ -63,8 +82,62 @@ public class ScopusAuthorKeywordsEntryPoint {
 		generateTriples(OUTPUT_FILE_NT, scholarsURLKeywordMap);
 	}
 
+	private void readInputFileAndGenerateMaps(String xmlFile) throws IOException, ParserConfigurationException, SAXException {
+		existingKeywords = new HashMap<String, Set<String>>();
+		urlToScopusId = new HashMap<String, String>();
 
-	private void readInputFileAndGenerateMaps(String inputFilePath) throws IOException {
+		DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+		DocumentBuilder dBuilder;
+		dBuilder = dbFactory.newDocumentBuilder();
+		Document doc = dBuilder.parse(xmlFile);
+		NodeList entryList = doc.getElementsByTagName("result");
+		for(int index=0; index< entryList.getLength(); index++){
+			Node node = entryList.item(index);
+			//System.out.println(node.getNodeName());
+			Element eElement = (Element) node;
+			NodeList bindingNodes = eElement.getElementsByTagName("binding");
+			
+			String url = null, scopusId = null, keywords = null;
+			for(int i = 0; i< bindingNodes.getLength(); i++){
+				Node n = bindingNodes.item(i);
+				Element bindElement = (Element) n;
+				String att = bindElement.getAttribute("name");
+				switch(att){
+				case "article": 
+					url = bindElement.getElementsByTagName("uri").item(0).getTextContent();
+					break;
+				case "scopusId": 
+					scopusId = bindElement.getElementsByTagName("literal").item(0).getTextContent();
+					scopusId = scopusId.substring(scopusId.lastIndexOf("-")+1);
+					break;
+				case "keywords": 
+					keywords = bindElement.getElementsByTagName("literal").item(0).getTextContent();
+					break;	
+				}
+			}
+			
+			Set<String> kwords = new HashSet<String>();
+			if(keywords != null){
+				String kw[] = keywords.split(";;");
+				for(String k : kw){
+					if(k.contains("&#")){
+						LOGGER.warning(url+" - Poorly formatted keyword: " + k);
+						continue;
+					}else if(!k.trim().isEmpty()){
+						kwords.add(k.trim().toUpperCase());
+					}
+				}
+			}
+			
+			urlToScopusId.put(scopusId, url);
+			existingKeywords.put(scopusId, kwords);
+			
+		}// end of reading entries.
+		LOGGER.info(entryList.getLength() + " rows read in the input file.");
+		LOGGER.info(urlToScopusId.size() + " URL to Scopus ID Map size.");
+	}
+
+	private void readInputFileAndGenerateMaps2(String inputFilePath) throws IOException {
 
 		existingKeywords = new HashMap<String, Set<String>>();
 		urlToScopusId = new HashMap<String, String>();
@@ -76,12 +149,21 @@ public class ScopusAuthorKeywordsEntryPoint {
 		br = new BufferedReader(new FileReader(inputFile));
 		while ((line = br.readLine()) != null) {
 			lineCount++;
+			if(lineCount == 819){
+				LOGGER.info(lineCount + " rows not correctly formatted.");
+			}
+			
+			//remove all quotes
+			line = line.replaceAll("\"", "");
 			if(line.trim().length() == 0 || lineCount == 1) continue;  // header or empty
 			@SuppressWarnings("resource")
 			CSVReader reader = new CSVReader(new StringReader(line),',', '"');	
 			String[] tokens;
 			while ((tokens = reader.readNext()) != null) {
 				try {
+					if(tokens.length < 3){
+						LOGGER.info(lineCount + " rows not correctly formatted.");
+					}
 					String url = tokens[0];
 					String scopusId = tokens[1];
 					scopusId = scopusId.substring(scopusId.lastIndexOf("-")+1);
@@ -89,7 +171,10 @@ public class ScopusAuthorKeywordsEntryPoint {
 					Set<String> kwords = new HashSet<String>();
 					String kw[] = keywords.split(";;");
 					for(String k : kw){
-						kwords.add(k.trim().toUpperCase());
+						if(!k.trim().isEmpty()){
+							kwords.add(k.trim().toUpperCase());
+						}
+						
 					}
 
 					urlToScopusId.put(scopusId, url);

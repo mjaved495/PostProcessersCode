@@ -30,7 +30,6 @@ public static String date = null;
 	public static String ARTICLEID_MASTER_KEYWORDMINER_FILENAME = 	"MASTER_KeywordMiner_ARTICLEID.csv";
 	public static String INF_KEYWORDS_CSV = "ArticleMapWithMinedKeywordsAndMeSH.csv";
 	public static String INF_KEYWORDS_NT =  "ArticleMapWithMinedKeywordsAndMeSH.nt";
-	public static String ARTICLE_2_SCOPUS_ABSTRACT_MAP_FILENAME = "Article2ScopusAbstractMap.xml";
 	
 	// HOMEPAGE KEYWORD CLOUD GENERATOR
 	public static String ARTICLE_2_PERSON_MAP_FILENAME = "Article2PersonMap.csv";
@@ -72,8 +71,8 @@ public static String date = null;
 	//SCOPUS AUTHOR KEYWORDS
 	public static String SCOPUS_FREETEXTKEYWORDS_OUTPUT_FILE = "scopusFreeTextKeywords.nt";
 	public static String SCOPUS_ARTICLEID_MASTER_KEYWORDMINER_FILENAME = "MASTER_KeywordMiner_ARTICLEID_SCOPUS.csv";
-	public static String SCOPUS_ARTICLEID_2_FREETEXTKEYWORDS = "scopusAuthorKeywords.csv";
-	
+	public static String NON_ABSTRACT_SCOPUS_IDS = "nonAbstractScopusIds.csv";
+	public static String SCOPUS_ARTICLEID_2_FREETEXTKEYWORDS = "scopusAuthorKeywords.xml";
 	
 	public static void setDate(String date) {
 		Configuration.date = date;

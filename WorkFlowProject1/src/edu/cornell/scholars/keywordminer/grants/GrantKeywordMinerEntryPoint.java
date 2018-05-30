@@ -42,7 +42,6 @@ public class GrantKeywordMinerEntryPoint {
 	//input file names
 	private static String GRANT_FILENAME = null;
 	private static String ALL_KW_FILENAME = null;
-	private static String ALL_MESHTERM_FILENAME = null;
 	private static String KWMINER_GRANTID_MASTER_FILENAME = null;
 	
 	//output file names
@@ -54,7 +53,6 @@ public class GrantKeywordMinerEntryPoint {
 	private static int grantLevelMinedWordCount = 0;
 
 	private Set<String> allkeywords = null;
-	private Set<Mesh> allMesh = null;
 	private List<GrantEntries> grant_rows = null;
 	private Set<String> matchWords = new HashSet<String>();
 
@@ -83,8 +81,6 @@ public class GrantKeywordMinerEntryPoint {
 				Configuration.GRANT_2_TITLE_ABSTRACT_MAP_FILENAME;
 		ALL_KW_FILENAME = Configuration.QUERY_RESULTSET_FOLDER +"/"+ Configuration.date +"/"+
 				Configuration.ALL_KEYWORDS_FILENAME;
-		ALL_MESHTERM_FILENAME = Configuration.QUERY_RESULTSET_FOLDER +"/"+ Configuration.date +"/"+
-				Configuration.ALL_MESHTERMS_FILENAME;
 		KWMINER_GRANTID_MASTER_FILENAME = Configuration.SUPPL_FOLDER +"/"+ 
 				Configuration.GRANTID_MASTER_KEYWORDMINER_FILENAME;	
 		//output file names
@@ -109,7 +105,6 @@ public class GrantKeywordMinerEntryPoint {
 		}
 		
 		allkeywords = getLines(new File(ALL_KW_FILENAME));
-		allMesh = getMeshLines(new File(ALL_MESHTERM_FILENAME));
 		
 		Map<String, GrantEntriesData> grantDataMap =  createGrantMapOfEntries(grant_rows);
 		LOGGER.info(grantDataMap.size()+" rows of grants data map.");
@@ -225,7 +220,7 @@ public class GrantKeywordMinerEntryPoint {
 			grantLevelMinedWordCount = 0;
 			Set<String> words = grantEntry.getWords();
 			// calling this method for each subject area of an grant.
-			boolean matchFound = process(grantEntry, words, allkeywords, allMesh,
+			boolean matchFound = process(grantEntry, words, allkeywords,
 					distnctTermsFoundForGrant);
 			if(matchFound){
 				grantcount++;
@@ -238,7 +233,7 @@ public class GrantKeywordMinerEntryPoint {
 	}
 
 	private boolean process(GrantEntriesData grantEntry, Set<String> titleStrings, 
-			Set<String> keywords, Set<Mesh> pubmeds, Set<String> distinctTermsFoundForGrant) {
+			Set<String> keywords, Set<String> distinctTermsFoundForGrant) {
 		String uri = grantEntry.getGrantURI();
 		//		if(uri.equals("http://scholars.cornell.edu/individual/UR-6864")){
 		//			//System.out.println("uu");
@@ -249,10 +244,9 @@ public class GrantKeywordMinerEntryPoint {
 			UCKeywords.add(keyword.toUpperCase());
 		}
 		for(String titleString : titleStrings){
+			if(stopWords.contains(titleString)) continue; // DO NOT PROCESS STOP WORDS
 			
-			if(!stopWords.contains(titleString)) continue; // DO NOT PROCESS STOP WORDS
-			
-			if(UCKeywords.contains(titleString.toUpperCase())){
+			if(UCKeywords.equals(titleString.toUpperCase())){
 				//System.out.println(titleString+" found in the keywords list.");	
 				Set<String> existingKW = grantKWMap.get(uri);
 				Set<String> existingMesh = grantMeshMap.get(uri);	
@@ -268,30 +262,6 @@ public class GrantKeywordMinerEntryPoint {
 					}
 					matchFound=true;
 				}	
-			}
-		}
-
-		Set<String> UCMeshTerms = new HashSet<String>();
-		for(Mesh mesh : pubmeds){
-			UCMeshTerms.add(mesh.getMeshLabel().toUpperCase());
-		}
-		for(String titleString : titleStrings){
-			if(UCMeshTerms.contains(titleString.toUpperCase())){
-				//System.out.println(titleString+" found in the keywords list.");
-				Set<String> existingKW = grantKWMap.get(uri);
-				Set<String> existingMesh = grantMeshMap.get(uri);	
-				// Add inferred keyword only if it does not currently exists in Keyword or MeSH terms of this Grant.
-				if((existingKW == null || !existingKW.contains(titleString.toUpperCase()))  && 
-						(existingMesh == null || !existingMesh.contains(titleString.toUpperCase()))){
-					matchWords.add(titleString);
-					grantEntry.addMeshTerms(titleString);
-					count++;
-					if(!distinctTermsFoundForGrant.contains(titleString)){
-						grantLevelMinedWordCount++;
-						distinctTermsFoundForGrant.add(titleString);
-					}
-					matchFound=true;
-				}
 			}
 		}
 		return matchFound;
